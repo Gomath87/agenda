@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="apple-mobile-web-app-title" content="Minha Rotina">
+<meta name="theme-color" content="#FAF8F6"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png">
+<title>Minha Rotina</title>
+<style>
+/* =====================================================
+   ✏️ EDITE AQUI: CORES DO APP (variáveis logo abaixo)
+   Troque o código da cor (#xxxxxx) para mudar o visual todo.
+   ===================================================== */
+:root{
+--bg:#FAF8F6;    /* fundo da tela (creme suave) */
+--card:#FFFFFF;  /* cartões */
+--bd:#E8E0DC;    /* bordas delicadas */
+--pri:#8B1E2B;   /* destaque e botões (bordô) */
+--pri2:#A62639;  /* bordô mais claro (detalhes) */
+--ok:#3D7A57;    /* concluído / pago (verde sálvia) */
+--warn:#7A5C6B;  /* "vence hoje" (malva) */
+--tx:#221E1F;    /* texto principal (grafite) */
+--tx2:#635B5D}   /* texto secundário (cinza escuro) */
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--tx);font:17px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",sans-serif}
+body{padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left)}
+#app{padding:12px 16px calc(160px + env(safe-area-inset-bottom));max-width:560px;margin:auto}
+h1{font-size:30px;margin:8px 0 2px}h2{margin:0;font-size:22px}
+h3{margin:22px 0 8px;font-size:15px;color:var(--tx2);text-transform:uppercase;letter-spacing:.04em}
+h3.late{color:var(--pri)}h3.warn{color:var(--warn)}h3.okt{color:var(--ok)}
+.sub,small{color:var(--tx2);font-size:15px}p.sub{margin:0 0 12px}
+/* ---- Cartões, botões, campos ---- */
+.card{background:var(--card);border:1px solid var(--bd);border-radius:18px;padding:14px;margin-bottom:12px}
+.vazio{text-align:center;color:var(--tx2);padding:28px 14px}
+.btn{display:block;width:100%;min-height:54px;margin:10px 0 0;border:0;border-radius:16px;font:inherit;font-weight:600;color:#fff;background:var(--pri)}
+.btn:active{transform:scale(.98)}
+.ghost{background:transparent;color:var(--pri);box-shadow:inset 0 0 0 2px var(--pri)}
+.okb{background:var(--ok)}
+.btn.sm{width:auto;min-width:92px;margin:0;min-height:48px;padding:0 14px}
+.lnk{background:none;border:0;color:var(--tx2);font:inherit;font-size:15px;text-decoration:underline;padding:12px 0 0}
+.in{display:block;width:100%;min-height:50px;padding:10px 14px;border:1.5px solid var(--bd);border-radius:14px;background:#fff;font:inherit;color:var(--tx);text-align:left}
+label{display:block;margin:14px 0 6px;font-weight:600;font-size:15px}
+.r2{display:flex;gap:10px}.r2>*{flex:1;min-width:0}.mb{margin-bottom:12px}
+.row{display:flex;align-items:center;gap:12px}.grow{flex:1;min-width:0}
+.tag{display:inline-block;margin:6px 6px 0 0;padding:3px 10px;border-radius:99px;font-size:13px;font-weight:600}
+.tag.n{background:#EFE8E4;color:var(--tx2)}
+.hr{font-size:22px;font-weight:700;color:var(--pri);min-width:64px}
+.aula.done{background:#F1F6F2;border-color:#BFD5C5;animation:pop .35s}
+@keyframes pop{50%{transform:scale(1.02)}}
+.nt{margin-top:10px}
+/* ---- Saudação de bom dia (topo da agenda) ---- */
+.gm{background:linear-gradient(135deg,var(--pri),var(--pri2));color:#fff;border:0;font-size:18px;font-weight:600;line-height:1.35}
+/* ---- Selo "Adiantado" ---- */
+.selo{display:inline-block;margin-top:6px;padding:3px 10px;border-radius:99px;font-size:13px;font-weight:600;background:#F3E6E8;color:var(--pri)}
+/* ---- Botões Faltou / Adiantar e botão Encerrar dia ---- */
+.acoes{display:flex;gap:10px;margin-top:10px}.acoes .btn{margin:0;min-height:48px;flex:1}
+.fim{background:var(--tx);margin-top:18px}
+/* ---- Agenda por horário: horários Vago, faltas e botões de hora ---- */
+.vago{display:flex;align-items:center;gap:12px;min-height:60px;margin-bottom:10px;padding:8px 14px;border:1.5px dashed var(--bd);border-radius:18px;color:var(--tx2)}
+.vago .hr{color:var(--tx2);font-size:20px;min-width:64px}.vago b{font-weight:600}.vago.pass{opacity:.45;pointer-events:none}
+.mais{width:44px;height:44px;border-radius:99px;background:#fff;border:1.5px solid var(--bd);color:var(--pri);font-size:26px;display:flex;align-items:center;justify-content:center;line-height:1}
+.falt{display:flex;align-items:center;justify-content:space-between;margin:0 4px 8px;padding:4px 12px;font-size:15px;color:var(--tx2);background:#F3E6E8;border-radius:12px}
+.falt .lnk{padding:8px 0 8px 10px;font-size:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:50px;min-width:68px;padding:0 14px;border-radius:14px;border:1.5px solid var(--pri);background:#fff;color:var(--pri);font:inherit;font-weight:700;font-size:17px}
+.chip.sm{min-height:44px;min-width:58px;font-size:16px}
+.tag.av{background:#F3E6E8;color:var(--pri)}
+/* ---- Janela de confirmação/aviso ---- */
+#cf{display:none;position:fixed;inset:0;background:rgba(34,30,31,.5);z-index:30;align-items:center;justify-content:center;padding:24px}
+.dlg{background:var(--bg);border-radius:22px;padding:22px;width:100%;max-width:360px}.dlg p{font-size:18px;font-weight:600;margin:0 0 6px;text-align:center}
+/* ---- Visual premium: sombras sutis, painel, progresso, semana, gráficos, menu ---- */
+.card{box-shadow:0 1px 2px rgba(34,30,31,.05)}
+nav svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dash{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:6px 0 12px}
+.dash .card{margin:0;padding:12px}.dash small{display:block}.dash b{font-size:22px}.dash .wide{grid-column:1/-1}
+.bar{height:8px;border-radius:99px;background:#EFE8E4;overflow:hidden;margin-top:8px}.bar i{display:block;height:100%;background:var(--ok);border-radius:99px;transition:width .4s}
+.prox{border-color:var(--pri);box-shadow:0 0 0 3px #8B1E2B1A}
+.dia{display:flex;align-items:center;gap:12px}.dia .n{min-width:52px;text-align:center}.dia .n b{font-size:22px;display:block}
+.hbar{display:flex;align-items:center;gap:8px;margin:8px 0;font-size:15px}
+.hbar span{min-width:84px;max-width:84px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--tx2)}
+.hbar .bar{flex:1;margin:0}.hbar .bar i{background:var(--pri)}.hbar em{font-style:normal;font-weight:700;min-width:64px;text-align:right}
+.menu{display:flex;align-items:center;justify-content:space-between;text-align:left;font:inherit;width:100%;min-height:62px;color:var(--tx)}
+.back{border:0;background:none;color:var(--pri);font:inherit;font-weight:600;padding:8px 0;min-height:44px}
+/* ---- Evolução visual: alerta terracota, ícones, transições, movimento reduzido ---- */
+:root{--terra:#B5654A}
+h1{letter-spacing:-.02em}.dash b,.amt,.hr{font-variant-numeric:tabular-nums}
+.btn{min-height:50px;border-radius:14px}
+h3.late,h3.warn{color:var(--terra)}
+.ic{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;vertical-align:-4px;flex:none}
+.noite .em .ic{width:44px;height:44px;color:var(--pri)}.gm .ic{vertical-align:-5px;margin-right:4px}
+.vw.go{animation:fi .24s ease}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+#ov{animation:ovin .2s ease}.sheet.in{animation:up .26s cubic-bezier(.2,.8,.2,1)}.sheet.out{animation:dn .17s ease forwards}
+@keyframes ovin{from{opacity:0}}@keyframes up{from{transform:translateY(40px);opacity:.4}}@keyframes dn{to{transform:translateY(40px);opacity:0}}
+.btn,.chip,.menu,.dia,.vago{transition:transform .12s,background .15s,opacity .15s}.dia:active,.vago:active,.menu:active{transform:scale(.985)}
+.cft{color:var(--terra);font-weight:600;font-size:15px;margin-top:8px}
+.mini{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--bd)}.mini:first-child{border-top:0}.mini .hr{font-size:18px;min-width:56px}
+#tt{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom));transform:translate(-50%,10px);background:var(--tx);color:#fff;padding:10px 18px;border-radius:99px;font-weight:600;font-size:15px;opacity:0;pointer-events:none;transition:.25s;z-index:40;white-space:nowrap}
+#tt.on{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+/* ---- Selo, alertas e abas de 3 botões ---- */
+nav button{position:relative}
+.bdg{position:absolute;top:2px;left:calc(50% + 6px);min-width:18px;height:18px;border-radius:99px;background:var(--terra);color:#fff;font-size:11px;font-weight:700;display:none;align-items:center;justify-content:center;padding:0 5px}
+.pill{min-width:26px;height:26px;border-radius:99px;background:var(--terra);color:#fff;font-weight:700;font-size:14px;display:inline-flex;align-items:center;justify-content:center;padding:0 8px}
+.seg.s3 button{font-size:13px;line-height:1.15;padding:0 2px}
+/* ---- Sensação de app nativo: sem seleção de texto nem menu de toque longo (exceto nos campos de formulário) ---- */
+*{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+input,textarea{-webkit-user-select:text;user-select:text;-webkit-touch-callout:default}
+/* ---- Dupla (2 alunos no mesmo horário), botões de dia e barra inferior fixa ---- */
+.card.dblock{border-left:4px solid var(--pri);padding-top:10px}.dblock .dl{margin-bottom:2px}
+.dp{padding:12px 0;border-top:1px solid var(--bd)}.dl+.dp{border-top:0}.dp .hr{display:none}
+.dp.done{background:#F1F6F2;border-radius:12px;padding:12px;margin:4px -4px;border-top-color:transparent}
+.dl{font-size:13px;font-weight:700;color:var(--pri);margin:0 0 6px;text-transform:uppercase;letter-spacing:.04em}
+.chip.on{background:var(--pri);color:#fff}
+nav{position:fixed;left:0;right:0;bottom:0;transform:translateZ(0);-webkit-transform:translateZ(0)} /* barra inferior sempre fixa na tela */
+/* ---- Dupla: um único bloco, as duas alunas separadas por um traço fino ---- */
+.dblock .hr{display:none}.dp{padding:10px 0}.dp+.dp{border-top:1px solid var(--bd)}
+.dp.done{background:#F1F6F2;margin:0 -14px;padding:10px 14px}.dp.prox{box-shadow:none}
+/* ---- Sem zoom por duplo toque ---- */
+html{touch-action:manipulation}
+/* ---- Painel da tela Hoje com 3 cartões ---- */
+.dash3{grid-template-columns:repeat(3,1fr);gap:8px}.dash3 .card{padding:12px 10px}.dash3 small{font-size:13px}
+/* ---- Cartão de Boa noite ---- */
+.noite{text-align:center}.noite .em{font-size:44px}.noite p{font-size:19px;font-weight:600;margin:10px 0}
+.amanha{background:#fff;border:1px solid var(--bd);border-radius:16px;padding:12px;margin:14px 0;text-align:left}
+.wk{display:flex;align-items:center;gap:4px;margin:8px 0 6px}.days{flex:1;display:flex;gap:4px}
+.dy{flex:1;border:1px solid var(--bd);background:#fff;border-radius:14px;min-height:60px;font:inherit;color:var(--tx);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:0}
+.dy small{font-size:12px}.dy b{font-size:18px}.dy.td b{color:var(--pri)}
+.dy.on{background:var(--pri);border-color:var(--pri)}.dy.on small,.dy.on b{color:#fff}
+.ar{border:0;background:none;font-size:30px;color:var(--pri);width:30px;min-height:56px;padding:0}
+/* ---- Barra de baixo, botão + e janelas ---- */
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding:6px 6px calc(6px + env(safe-area-inset-bottom));z-index:5}
+nav button{flex:1;border:0;background:none;font:inherit;font-size:12px;font-weight:600;color:var(--tx2);min-height:54px;display:flex;flex-direction:column;align-items:center;gap:2px}
+nav button span{font-size:22px}nav button.on{color:var(--pri)}
+#fab{position:fixed;right:16px;bottom:calc(82px + env(safe-area-inset-bottom));z-index:6;border:0;border-radius:99px;min-height:58px;padding:0 24px;background:var(--pri);color:#fff;font:inherit;font-weight:700;font-size:18px;box-shadow:0 6px 18px rgba(139,30,43,.35)}
+#ov{display:none;position:fixed;inset:0;background:rgba(45,41,38,.45);z-index:10}
+.sheet{position:absolute;left:0;right:0;bottom:0;max-height:92%;overflow:auto;background:var(--bg);border-radius:24px 24px 0 0;padding:18px 16px calc(28px + env(safe-area-inset-bottom));max-width:560px;margin:auto}
+.sh{display:flex;justify-content:space-between;align-items:center}
+.x{border:0;background:#EFE8E4;border-radius:99px;width:40px;height:40px;font-size:16px;color:var(--tx2)}
+.fx,.av{background:#fff;border:1px solid var(--bd);border-radius:14px;padding:8px 8px 8px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap}
+.av .sub{flex-basis:100%}
+.seg{display:flex;background:#EFE8E4;border-radius:14px;padding:4px;margin-top:14px}
+.seg button{flex:1;border:0;background:none;border-radius:11px;min-height:46px;font:inherit;font-weight:600;color:var(--tx2)}
+.seg .on{background:#fff;color:var(--pri)}
+.big{text-align:center;margin:0}.big small{display:block}.big b{font-size:24px}.big.g b{color:var(--ok)}.big.p b{color:var(--pri)}
+.pay{display:flex;align-items:center;gap:10px}.pay.paid{opacity:.75}.amt{font-weight:700;white-space:nowrap}
+</style></head><body>
+<!-- Área onde as telas (Hoje, Alunos, Dinheiro, Backup) são desenhadas pelo JavaScript -->
+<div id="app"></div>
+<button id="fab" onclick="tab=='alunos'?sheetAluno():(tab=='hoje'&&(sel=hoje()),sheetAdd())"></button>
+<!-- Barra de baixo: para mudar nomes/ícones das abas, edite os botões abaixo -->
+<nav>
+<button data-t="hoje" onclick="go('hoje')"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Hoje</button>
+<button data-t="agenda" onclick="go('agenda')"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</button>
+<button data-t="alunos" onclick="go('alunos')"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6M16 4.5a3.5 3.5 0 0 1 0 7M18 14.5c2.2.7 3.5 2.7 3.5 5.5"/></svg>Alunos</button>
+<button data-t="grana" onclick="go('grana')"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 15h2"/></svg>Financeiro<span class="bdg" id="bd"></span></button>
+<button data-t="mais" onclick="go('mais')"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Mais</button>
+</nav>
+<!-- Janela que sobe de baixo (cadastro, adiantar aula, boa noite) -->
+<div id="ov"></div>
+<!-- Janela de confirmação/aviso do próprio app (no lugar de confirm/alert do navegador) -->
+<div id="tt"></div>
+<div id="cf"></div>
+<script>
+/* =====================================================
+   Todo o app fica neste bloco. Procure os avisos "✏️ EDITE AQUI":
+   frases de bom dia, frases de boa noite, cores das etiquetas e regras da agenda.
+   ===================================================== */
+const $=s=>document.querySelector(s),K='rotina_personal_v1';
+const DIAS=['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'],DC=['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+const MES=['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+/* ✏️ EDITE AQUI: cores das etiquetas de academia (cada academia pega uma cor desta lista) */
+const COR=['#8B1E2B','#3D7A57','#6A5A8C','#2F6F7E','#A04A6E','#5C6B3A'];
+/* Dados do app: alunos, aulas avulsas, aulas feitas, faltas, adiantamentos e pagamentos */
+const base=()=>({cfg:{nome:'',hIni:5,hFim:21,frase:true,vagos:true},alunos:[],aulas:[],feitas:{},faltas:{},mov:{},pagos:{},recebidos:[],despFixas:[],despPagas:{},despLanc:[],extras:[]});
+/* Se os dados salvos estiverem ilegíveis, uma cópia é guardada em K_corrompido antes de começar do zero. */
+function load(){const raw=localStorage.getItem(K);try{return{...base(),...JSON.parse(raw)}}catch(e){try{localStorage.setItem(K+'_corrompido',raw)}catch(_){}return base()}}
+let D=load(),tab='hoje',q='',E,AT='avulsa';
+function save(){try{localStorage.setItem(K,JSON.stringify(D))}catch(e){aviso('Não consegui salvar. Faça um backup e libere espaço no iPhone.')}}
+const uid=()=>Math.random().toString(36).slice(2,9);
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const pd=s=>{const[a,b,c]=s.split('-');return new Date(+a,b-1,+c)};
+const hoje=()=>iso(new Date()),ad=(s,n)=>{const d=pd(s);d.setDate(d.getDate()+n);return iso(d)};
+let sel=hoje();
+const brl=v=>(v||0).toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num=v=>{const n=parseFloat(String(v).replace(',','.'));return isNaN(n)?0:n};
+const fd=s=>s.split('-').reverse().join('/'),fd2=s=>fd(s).slice(0,5),cap=s=>s[0].toUpperCase()+s.slice(1);
+function tag(ac){if(!ac)return'';let h=0;for(const c of ac.toLowerCase())h=(h*31+c.charCodeAt(0))%97;const c=COR[h%COR.length];return`<span class="tag" style="background:${c}22;color:${c}">${esc(ac)}</span>`}
+function dlAc(){const L=[...new Set([...D.alunos.map(a=>a.academia),...D.aulas.map(a=>a.academia)].filter(Boolean))];return`<datalist id="dl-a">${L.map(a=>`<option value="${esc(a)}">`).join('')}</datalist>`}
+function sheet(h){FK++;const o=$('#ov'),p=o.querySelector('.sheet'),sc=p?p.scrollTop:0,nv=o.style.display!='block';o.innerHTML='<div class="sheet'+(nv?' in':'')+'">'+h+'</div>';o.style.display='block';o.querySelector('.sheet').scrollTop=sc}
+/* ✏️ CONFIRMAÇÃO E AVISO do próprio app. ask(texto, o que fazer ao confirmar, texto do botão); aviso(texto). */
+function ask(msg,fn,ok){const o=$('#cf');o.innerHTML=`<div class="dlg"><p>${esc(msg)}</p><button class="btn" id="cf-ok">${ok||'Sim'}</button><button class="btn ghost" id="cf-no">Cancelar</button></div>`;o.style.display='flex';
+$('#cf-no').onclick=()=>{o.style.display='none'};$('#cf-ok').onclick=()=>{o.style.display='none';fn()}}
+function aviso(msg){const o=$('#cf');o.innerHTML=`<div class="dlg"><p>${esc(msg)}</p><button class="btn" id="cf-ok">OK</button></div>`;o.style.display='flex';$('#cf-ok').onclick=()=>{o.style.display='none'}}
+function fechar(){const o=$('#ov'),p=o.querySelector('.sheet'),my=++FK;if(!p){o.style.display='none';return}p.classList.add('out');setTimeout(()=>{if(my==FK){o.style.display='none';o.innerHTML=''}},170)}
+function go(t){tab=t;q='';MS='menu';GO=true;FM=0;render();scrollTo(0,0)}
+function render(){D.cfg={...base().cfg,...D.cfg};D.despFixas=D.despFixas||[];D.despPagas=D.despPagas||{};D.despLanc=D.despLanc||[];D.recebidos=D.recebidos||[];D.extras=D.extras||[];H_INI=+D.cfg.hIni||5;H_FIM=+D.cfg.hFim||21; /* horário vem das Configurações */
+document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==tab));
+const f=$('#fab');f.style.display=(tab=='hoje'||tab=='agenda'||tab=='alunos')?'block':'none';f.textContent=tab=='alunos'?'+ Aluno':'+ Aula';const nb=cobr().n+alertDesp().length,bd=$('#bd');bd.textContent=nb;bd.style.display=nb?'flex':'none'; /* selo no Financeiro */
+const v=({hoje:vHoje,agenda:vAgenda,alunos:vAlunos,grana:vGrana,mais:vMais})[tab]();$('#app').innerHTML='<div class="vw'+(GO?' go':'')+'">'+v+'</div>';GO=false;if(tab=='alunos')lista()}
+
+/* =====================================================
+   ✏️ EDITE AQUI: FRASES DE BOM DIA (aparecem no topo da agenda de hoje)
+   - Uma frase por dia do mês: dia 1 usa a 1ª frase, dia 2 a 2ª ... dia 31 a 31ª.
+   - Para TROCAR: mude o texto entre aspas.
+   - Para ADICIONAR: ponha uma vírgula no fim da última linha e escreva a nova frase entre aspas.
+   - Para REMOVER: apague a linha inteira. (Com menos de 31 frases, elas repetem dentro do mesmo mês.)
+   - Não use aspas duplas (") dentro da frase e mantenha vírgula no fim de cada linha, menos na última.
+   ===================================================== */
+const BOM_DIA=[
+"Gata! Vamos com tudo hoje!",
+"Miau! 🐱 Hoje o dia já começou com energia boa?",
+"Cadê a mulher mais linda desse mundo todinho?",
+"Au-au! Já acordei, já vigiei a casa e agora tô liberando você pra ir treinar.🐶",
+"Hoje você vai fazer a diferença na vida de muita gente!",
+"Levanta que o mundo precisa dessa energia!",
+"Vamos trabalhar mamãe? Comprar a ração de Mildo Mildo 🐶",
+"Esse sorriso abre qualquer academia. Bom dia! 😊",
+"Hoje tem aluno evoluindo por sua causa, vamos com tudo!",
+"Café na mão e foco no coração.",
+"Espero que minha skincare não tenha atrapalhado seu sono essa noite! 🐶",
+"Dia novo, agenda nova, mesma força de sempre. Bora! ",
+"Respira fundo, toma seu café e lembra que você é absolutamente incrível no que faz!",
+"Não esqueça que minha ração premium depende do seu esforço! 🐶",
+"Linda! Você é inspiração em forma de gente.",
+"Acordou? Então já começou ganhando o dia.",
+"Bom dia! Que cada aula de hoje termine com um aluno orgulhoso.",
+"Miau! 🐱 Bom dia, gata! Se bater preguiça, lembra de tudo que você já conquistou.",
+"Mulher poderosa! A agenda que se prepare... 💥",
+"Hoje o treino é seu também: respira fundo e sorri!",
+"Linda! Você faz o difícil parecer leve.",
+"Esse dia é seu. Vai lá e aproveita cada minuto.",
+"Bom dia! Disciplina, carinho e energia boa: a receita de hoje.",
+"Gata, o mundo ficou mais forte porque você acordou. Bom dia!",
+"Au-au! Já acordei, já vigiei a casa e agora tô liberando você pra ir dar treino.🐶",
+"🐶Boletim médico da manhã: os zovos estão 90% recuperados, mas meu apetite já está em 200%! Trabalha escrava pra comprar minha ração premium🐶",
+"Bom dia, gata! Que nada tire o seu foco, nem o seu sorriso.",
+"Acordei cedo só pra latir pra parede, agora é a sua vez de ir lá dar o seu melhor na academia! 🐶",
+"Bom dia! Hoje é dia de ser a melhor versão de ontem.",
+"Linda? Bora que os alunos estão esperando a melhor personal.",
+"Fim de mês chegando e você firme como sempre. Bom dia, gata! 🙌"
+];
+
+/* =====================================================
+   ✏️ EDITE AQUI: FRASES DE BOA NOITE (aparecem ao tocar em "Encerrar dia")
+   Mesmas regras da lista acima: uma frase por dia do mês (1ª = dia 1 ... 31ª = dia 31).
+   ===================================================== */
+const BOA_NOITE=[
+"Parabéns por mais um dia, muito orgulhoso de você. 🌙",
+"E num é que a linda venceu mais um dia?",
+"Boa noite, gata! Hora de desligar a cabeça e descansar.",
+"Missão cumprida por hoje. Dorme bem, gata! 😴",
+"Você deu o seu melhor hoje e isso já basta. Boa noite! ✨",
+"Tira o tênis, solta o corpo e deixa o travesseiro cuidar de você.",
+"Mildo Mildo estava esperando ansioso pra mamãe chegar em casa 🐶",
+"Que dia bem vivido! Você merece um sono tranquilo. 😴",
+"Boa noite, hoje você transformou vidas, amanhã também. 💪",
+"Miau! 🐱 Chega de agenda por hoje. Banho quente e cama!",
+"Descansa, gata. Quem cuida dos outros também precisa de cuidado.",
+"Mais um dia na conta das vitórias. Boa noite! 🌙",
+"Boa noite! Respira fundo, agradece e deixa o resto pra amanhã.",
+"Miau! 🐱 Boa noite, gata! Você mandou muito bem hoje.",
+"Que orgulho: você fechou o dia de cabeça erguida. 🌙",
+"Boa noite, estrela! Que os sonhos sejam leves como o seu sorriso. 🌟",
+"Hoje você foi gigante. Agora é hora de recarregar a bateria. 🔋",
+"Pode soltar o celular, o dia já está ganho.",
+"Boa noite, gata! Dorme em paz: você fez o que podia e fez bem feito.",
+"Sua dedicação merece um descanso de rainha. Boa noite! 👑",
+"Que seja uma noite macia e um sono dos bons. 😌",
+"Gata cansada é gata que cumpriu a missão. Boa noite!",
+"Boa noite! Cada aula de hoje deixou alguém um pouco melhor. 🤍",
+"Fecha os olhos e agradece: foi um dia bonito de trabalho. 🌙",
+"Boa noite, gata! Amanhã a energia volta, hoje é dia de recarregar.",
+"Dia encerrado com sucesso! Agora é hora de recarregar as energias para amanhã. Dorme bem!",
+"Dia encerrado com chave de ouro. Descansa, campeã! 🥇",
+"Boa noite! O mundo é melhor com você nele. 🌷",
+"Respira fundo: tudo que era pra fazer hoje, você fez. Boa noite, gata!",
+"Miau! 🐱 Hoje você arrasou. Dorme bem e sonha alto!",
+"Mais um mês quase fechado e você firme. Boa noite, gata! 🙌"
+];
+/* Escolhe a frase pelo dia do mês da data (AAAA-MM-DD). Não precisa mexer. */
+/* =====================================================
+   ✏️ EDITE AQUI: VERSÍCULOS DA TARDE (aparecem na tela inicial das 12:00 às 17:59)
+   Mesmas regras das listas acima: uma frase por dia do mês (1ª = dia 1 ... 31ª = dia 31);
+   no último dia real do mês aparece sempre a última. Para trocar, edite o texto entre aspas.
+   ===================================================== */
+const VERSICULOS=[
+"Tudo posso naquele que me fortalece. — Filipenses 4:13",
+"O Senhor é o meu pastor; nada me faltará. — Salmos 23:1",
+"Entrega o teu caminho ao Senhor; confia nele, e ele o fará. — Salmos 37:5",
+"O Senhor te abençoe e te guarde. — Números 6:24",
+"Descansa no Senhor e espera nele. — Salmos 37:7",
+"Espera no Senhor, anima-te, e ele fortalecerá o teu coração. — Salmos 27:14",
+"Porque sou eu que conheço os planos que tenho para vós, diz o Senhor. — Jeremias 29:11",
+"Lâmpada para os meus pés é a tua palavra, e luz para o meu caminho. — Salmos 119:105",
+"O choro pode durar uma noite, mas a alegria vem pela manhã. — Salmos 30:5",
+"Deus é o nosso refúgio e fortaleza, socorro bem presente na angústia. — Salmos 46:1",
+"Sê forte e corajosa; não temas, nem te espantes, porque o Senhor teu Deus é contigo. — Josué 1:9",
+"Deleita-te também no Senhor, e ele te concederá o que deseja o teu coração. — Salmos 37:4",
+"Em tudo dai graças, porque esta é a vontade de Deus. — 1 Tessalonicenses 5:18",
+"O amor é paciente, o amor é bondoso. — 1 Coríntios 13:4",
+"Alegrai-vos sempre no Senhor; outra vez digo, alegrai-vos. — Filipenses 4:4",
+"Lançando sobre ele toda a vossa ansiedade, porque ele tem cuidado de vós. — 1 Pedro 5:7",
+"O Senhor firmará os passos daquele cuja conduta lhe agrada. — Salmos 37:23",
+"Mil cairão ao teu lado, e dez mil à tua direita, mas tu não serás atingida. — Salmos 91:7",
+"Mas os que esperam no Senhor renovarão as suas forças. — Isaías 40:31",
+"Combati o bom combate, acabei a carreira, guardei a fé. — 2 Timóteo 4:7",
+"Aquele que começou a boa obra em vós há de completá-la. — Filipenses 1:6",
+"O Senhor é a minha luz e a minha salvação; de quem terei temor? — Salmos 27:1",
+"Consagra ao Senhor tudo o que você faz, e os seus planos serão bem-sucedidos. — Provérbios 16:3",
+"Deus não nos deu espírito de covardia, mas de poder, de amor e de equilíbrio. — 2 Timóteo 1:7",
+"Este é o dia que fez o Senhor; regozijemo-nos e alegremo-nos nele. — Salmos 118:24",
+"Bem-aventurados os pacificadores, porque serão chamados filhos de Deus. — Mateus 5:9",
+"O coração alegre aformoseia o rosto. — Provérbios 15:13",
+"Vinde a mim, todos os que estais cansados e oprimidos, e eu vos aliviarei. — Mateus 11:28",
+"Porque para Deus nada é impossível. — Lucas 1:37",
+"Guarda-me como a menina dos olhos; esconde-me à sombra das tuas asas. — Salmos 17:8",
+"Até aqui nos ajudou o Senhor. — 1 Samuel 7:12"
+];
+/* No ÚLTIMO dia real do mês (28, 29, 30 ou 31, calculado pelo calendário) usa sempre a última frase da lista. */
+const frase=(L,data)=>{const[a,m,d]=data.split('-').map(Number),ult=new Date(a,m,0).getDate();return L[d==ult?L.length-1:(d-1)%L.length]};
+
+/* =====================================================
+   ✏️ REGRAS DA AGENDA (horários, vagas, faltas, adiantar, avaliação, encerrar dia)
+   ✏️ HORÁRIO DE ATENDIMENTO: mude H_INI (primeira hora) e H_FIM (última hora) logo abaixo.
+   Dados guardados em D (tudo só neste aparelho):
+   - chave da aula: fixa = idAluno|data|horaOriginal ; avulsa/avaliação = a|idDaAula
+   - D.aulas[]  = aulas avulsas e avaliações: {id,nome,data,hora,academia,valor,tipo}  (tipo 'aval' = avaliação física)
+   - D.faltas[chave] = {nome,data,hora,aid}  aluno faltou: fica no histórico dele e
+       NÃO mexe no faturamento (mensalidades e valores avulsos continuam valendo).
+   - D.mov[chave] = {de,para}  aula adiantada (de = horário original, para = novo horário)
+   - VAGO = hora inteira (de H_INI a H_FIM) sem nenhuma aula ativa. É calculado na hora:
+       quando alguém falta ou é adiantado, o horário antigo aparece sozinho como "Vago".
+   ===================================================== */
+let H_INI=5,H_FIM=21; /* valores reais vêm de Mais › Configurações */
+const p2=n=>String(n).padStart(2,'0'),hora2=h=>p2(h)+':00',hh=h=>{const[a,b]=h.split(':');return +a+'h'+(b=='00'?'':b)}; /* 16:00 -> 16h */
+/* Todas as aulas de um dia (inclui as que faltaram), com adiantamentos aplicados. */
+function aulasDia0(d){const w=pd(d).getDay(),L=[];
+D.alunos.forEach(a=>(a.fixos||[]).forEach(f=>{if(f.dia==w&&!(D.mov[a.id+'|'+d+'|'+f.hora]||{}).data&&!(a.criado&&d<a.criado&&D.feitas[a.id+'|'+d+'|'+f.hora]===undefined&&D.faltas[a.id+'|'+d+'|'+f.hora]===undefined))L.push({k:a.id+'|'+d+'|'+f.hora,nome:a.nome,hora:f.hora,ac:a.academia,fixa:1,aid:a.id})}));
+D.aulas.filter(x=>x.data==d).forEach(x=>L.push({k:'a|'+x.id,nome:x.nome,hora:x.hora,ac:x.academia,fixa:0,id:x.id,aval:x.tipo=='aval',valor:x.valor,paga:x.paga}));
+Object.keys(D.mov).forEach(k=>{const m=D.mov[k];if(m.data!=d||k.startsWith('a|'))return;const[id,od]=k.split('|'),a=D.alunos.find(x=>x.id==id);if(a)L.push({k,nome:a.nome,hora:m.para,ac:a.academia,fixa:1,aid:a.id,deData:od})}); /* aulas fixas reagendadas PARA este dia */
+return L.map(l=>{const m=D.mov[l.k];if(m){l.de=m.de;l.hora=m.para}l.falta=!!D.faltas[l.k];return l}).sort((a,b)=>a.hora.localeCompare(b.hora))}
+/* Horas inteiras livres (sem aula ativa) de um dia. */
+function livres(d){const oc=new Set(aulasDia(d).filter(l=>!l.falta).map(l=>parseInt(l.hora)));const V=[];for(let h=H_INI;h<=H_FIM;h++)if(!oc.has(h))V.push(h);return V}
+/* Linha do tempo do dia: cada hora de H_INI a H_FIM (+ horas fora desse intervalo que tenham aula). */
+function slots(d){const L=aulasDia(d),H=new Set();for(let h=H_INI;h<=H_FIM;h++)H.add(h);L.forEach(l=>H.add(parseInt(l.hora)));
+return[...H].sort((a,b)=>a-b).map(h=>({h,L:L.filter(l=>parseInt(l.hora)==h)}))}
+/* Seletor de hora inteira (mais fácil que a roda do relógio). */
+function hrSel(id,val){let o='';for(let h=H_INI;h<=H_FIM;h++)o+=`<option value="${hora2(h)}"${hora2(h)==val?' selected':''}>${h}h</option>`;
+if(val&&!o.includes(`value="${val}"`))o=`<option value="${val}" selected>${hh(val)}</option>`+o;return`<select class="in" id="${id}"${id=='a-h'?' onchange="liv()"':''}>${o}</select>`}
+
+/* ---------- HOJE (agenda do dia: todos os horários, com "Vago" nos livres) ---------- */
+/* ---------- HOJE (tela inicial: só o que importa agora) ---------- */
+function vHoje(){const t=hoje();sel=t;const d=new Date(),h=d.getHours(),A=aulasDia(t).filter(l=>!l.falta),n=A.filter(l=>D.feitas[l.k]!==undefined).length,
+/* ✏️ REGRAS DA TELA INICIAL (atendimentos):
+   - "Em atendimento" = aula ainda não concluída da hora cheia atual, mesmo que já tenha começado (ex.: 19:58 → aula das 19h).
+   - "Próximo" = primeira aula não concluída de uma hora POSTERIOR à atual (ex.: 19:58 → aula das 20h).
+   - "Depois" = todas as aulas seguintes ao próximo. */
+pend=A.filter(l=>D.feitas[l.k]===undefined),ats=pend.filter(l=>parseInt(l.hora)==h),fut=pend.filter(l=>parseInt(l.hora)>h),nxh=fut.length?parseInt(fut[0].hora):-1,nxs=fut.filter(l=>parseInt(l.hora)==nxh),mais=fut.filter(l=>parseInt(l.hora)>nxh),at=ats[0],nx=nxs[0],
+lv=livres(t).filter(x=>x>h).length,rec=D.recebidos.filter(r=>r.data==t).reduce((s,r)=>s+r.valor,0)+D.extras.filter(x=>x.data==t).reduce((s,x)=>s+x.valor,0);
+PROX=at?at.k:nx?nx.k:null;
+return`<p class="sub" style="margin:8px 0 0">${DIAS[d.getDay()]}, ${d.getDate()} de ${MES[d.getMonth()]}</p><h1 style="margin-top:2px">${saud()}</h1>
+${subTopo(d.getHours(),t)}
+<div class="dash dash3"><div class="card"><small>Atendimentos</small><b>${A.length}</b></div><div class="card"><small>Concluídos</small><b>${n}</b></div><div class="card"><small>Horas hoje</small><b>${fmtH(minDia(t))}</b></div></div>
+${A.length?`<div class="bar" style="margin:0 0 6px"><i style="width:${Math.round(n/A.length*100)}%"></i></div>`:''}
+${ats.length?`<h3>Em atendimento</h3>${ats.map(card).join('')}`:''}<h3>Próximo atendimento</h3>${nx?nxs.map(card).join(''):`<div class="card vazio">${A.length?(at?'Nenhum próximo atendimento hoje.':pend.length?'Sem mais atendimentos hoje.':'Tudo concluído por hoje.'):'Nenhum atendimento hoje.'}</div>`}
+${mais.length?`<h3>Depois</h3><div class="card">${mais.map(l=>`<div class="mini" onclick="go('agenda')"><div class="hr">${hh(l.hora)}</div><div class="grow"><b>${esc(l.nome)||(l.aval?'Avaliação física':'Aula avulsa')}</b><div class="sub">${esc(l.ac||'')}</div></div></div>`).join('')}</div>`:''}
+<div class="card row" onclick="go('agenda')"><div class="grow"><b>${lv} horário${lv==1?'':'s'} livre${lv==1?'':'s'} hoje</b><div class="sub">Toque para ver a agenda</div></div><span style="color:var(--tx2);font-size:24px">›</span></div>
+${rec>0?`<div class="card">Recebido hoje (avulsas, avaliações e renda extra): <b>${brl(rec)}</b></div>`:''}
+${cobrCard()}
+<button class="btn fim" onclick="sel=hoje();encerrar()">Encerrar dia ${ico('moon')}</button>`}
+/* ---------- AGENDA (Dia ou Semana) ---------- */
+function vAgenda(){return`<h1>Agenda</h1><div class="seg mb"><button class="${AV=='dia'?'on':''}" onclick="AV='dia';render()">Dia</button><button class="${AV=='sem'?'on':''}" onclick="AV='sem';render()">Semana</button></div>`+(AV=='dia'?vDia():vSemana())}
+function vDia(){const t=hoje(),d=pd(sel),w=d.getDay(),s0=ad(sel,-w);let st='';
+for(let i=0;i<7;i++){const k=ad(s0,i);st+=`<button class="dy${k==sel?' on':''}${k==t?' td':''}" onclick="sel='${k}';render()"><small>${DC[i]}</small><b>${+k.slice(8)}</b></button>`}
+const R=aulasDia(sel).filter(l=>!l.falta),n=R.filter(l=>D.feitas[l.k]).length,agora=sel==t?new Date().getHours():-1,lv=livres(sel).filter(h=>h>agora).length;
+PROX=null;const nx=R.find(l=>D.feitas[l.k]===undefined&&(sel!=t||l.hora>=p2(agora)+':00'));if(nx)PROX=nx.k;
+return`<p class="sub">${sel==t?'Hoje':DIAS[w]}, ${d.getDate()} de ${MES[d.getMonth()]} · ${R.length?n+' de '+R.length+' feitas · ':''}${lv} livre${lv==1?'':'s'}</p>
+<div class="wk"><button class="ar" onclick="sel=ad(sel,-7);render()">‹</button><div class="days">${st}</div><button class="ar" onclick="sel=ad(sel,7);render()">›</button></div>
+${sel!=t?'<button class="btn ghost mb" onclick="sel=hoje();render()">Voltar para hoje</button>':''}
+<div style="height:8px"></div>${agendaLista()}`}
+/* Uma hora da agenda: aulas dela, faltas (linha rosada) e, se não tiver aula, a linha "Vago". */
+function slotHtml(s){const A=s.L.filter(l=>!l.falta),F=s.L.filter(l=>l.falta);
+const fl=F.map(l=>`<div class="falt"><span>✕ Faltou: <b>${esc(l.nome)}</b></span><button class="lnk" onclick="desfazFalta('${l.k}')">desfazer</button></div>`).join('');
+if(A.length>1)return fl+`<div class="card dblock${A.some(l=>l.k==PROX)?' prox':''}"><div class="dl">${s.h}h · Dupla</div>${A.map(l=>card(l,true)).join('')}</div>`; /* dupla: um único bloco com as duas alunas */if(A.length)return fl+A.map(card).join('');if(D.cfg.vagos===false)return fl;
+const pass=sel==hoje()&&s.h<=new Date().getHours(); /* a hora cheia atual já conta como passada */
+return fl+`<div class="vago${pass?' pass':''}"${pass?'':` onclick="sheetVago(${s.h})"`}><div class="hr">${s.h}h</div><div class="grow"><b>Vago</b>${pass?' <span class="sub">· já passou</span>':''}</div>${pass?'':'<span class="mais">＋</span>'}</div>`}
+function card(l,bl){const f=D.feitas[l.k],ok=f!==undefined; /* bl===true: linha dentro do bloco da dupla (sem cartão próprio) */
+return`<div class="${bl===true?'dp':'card aula'}${ok?' done':''}${l.k==PROX?' prox':''}"><div class="row"><div class="hr">${l.hora}</div><div class="grow"><b>${esc(l.nome)||(l.aval?'Avaliação física':'Aula avulsa')}</b><div>${tag(l.ac)}<span class="tag ${l.aval?'av':'n'}">${l.fixa?'Fixa':l.aval?'Avaliação física':'Avulsa'}</span></div>${l.de?`<div><span class="selo">Reagendado ${l.deData?'de '+fd2(l.deData)+' · ':''}${hh(l.de)} → ${hh(l.hora)}</span><button class="lnk" style="padding:0 0 0 8px" onclick="desfazAdiant('${l.k}')">desfazer</button></div>`:''}</div></div>
+<button class="btn ${ok?'okb':''}" onclick="feita('${l.k}')">${ok?(l.dupla?'✓ Veio':'✓ Aula feita'):(l.dupla?'Veio':'Marcar como feita')}</button>
+${ok&&l.paga?'<div class="sub" style="margin-top:8px">✓ Pago</div>':''}${ok&&!l.fixa&&l.valor>0?'<div class="sub" style="margin-top:8px">'+ico('coin')+' Foi para o Financeiro › Avulsa/Avaliação</div>':''}
+${ok?`<input class="in nt" placeholder="Anotação do treino (opcional)" value="${esc(f.nota||'')}" onchange="nota('${l.k}',this.value)">`:`<div class="acoes"><button class="btn ghost" onclick="faltou('${l.k}')">Faltou</button><button class="btn ghost" onclick="sheetReag('${l.k}')">Reagendar</button></div>`}
+${l.fixa?'':`<button class="lnk" style="margin-left:18px" onclick="delAula('${l.id}')">Remover</button>`}</div>`}
+function feita(k){const f=D.feitas[k];if(f===undefined){D.feitas[k]={nota:''};toast('Aula concluída');save();render()}
+else if(f.nota)ask('Desmarcar a aula? A anotação será apagada.',()=>{delete D.feitas[k];save();render()},'Desmarcar');
+else{delete D.feitas[k];save();render()}}
+function nota(k,v){D.feitas[k]={nota:v};save()}
+function delAula(id){ask('Remover do dia?',()=>{D.aulas=D.aulas.filter(x=>x.id!=id);const k='a|'+id;delete D.feitas[k];delete D.pagos[k];delete D.faltas[k];delete D.mov[k];save();render()},'Remover')}
+
+/* ---------- VAGO: toque num horário livre para adiantar alguém, adicionar aula ou avaliação ---------- */
+function sheetVago(h){if(sel==hoje()&&h<=new Date().getHours())return; /* horário que já passou hoje não abre */
+const hr=hora2(h),ocu=ativosHora(sel,h);if(ocu.length>=CAP||ocu.some(l=>l.aval))return; /* lotado (2 alunos) ou reservado para avaliação: não abre */
+const T=aulasDia(sel).filter(l=>!l.falta&&l.hora>hr&&D.feitas[l.k]===undefined&&!(ocu.length&&l.aval));
+sheet(`<div class="sh"><h2>${h}h ${ocu.length?'tem 1 vaga sobrando':'está vago'}</h2><button class="x" onclick="fechar()">✕</button></div>
+${ocu.length?`<p class="sub">Já treina às ${h}h: ${esc(ocu[0].nome)||'1 aluno'}. Quem entrar divide o horário (dupla).</p>`:''}
+${T.length?`<label>Adiantar alguém para as ${h}h</label>${T.map(l=>`<button class="btn ghost" onclick="adiantar('${l.k}','${hr}',1)">${esc(l.nome)} · ${hh(l.hora)}</button>`).join('')}`:''}
+<label>Ou colocar aqui</label>
+<div class="acoes"><button class="btn" onclick="sheetAdd('avulsa','${hr}')">Aula avulsa</button>${ocu.length?'':`<button class="btn" onclick="sheetAdd('aval','${hr}')">Avaliação</button>`}</div>`)}
+
+/* ---------- FALTOU: o horário fica "Vago" e a falta vai para o histórico do aluno ---------- */
+function faltou(k){const l=aulasDia(sel).find(x=>x.k==k);if(!l)return;
+D.faltas[k]={nome:l.nome,data:sel,hora:l.hora,aid:l.aid||(D.alunos.find(a=>a.nome.toLowerCase()==l.nome.toLowerCase())||{}).id||null};save();render()}
+function desfazFalta(k){const f=D.faltas[k];if(f){const x=k.startsWith('a|')?D.aulas.find(a=>'a|'+a.id==k):null;if(!cabe(f.data,f.hora,k,!!(x&&x.tipo=='aval'))){aviso('Não dá para desfazer a falta: esse horário já foi ocupado por outro aluno.');return}}delete D.faltas[k];save();render()}
+
+/* ---------- ADIANTAR (ao tocar num horário Vago): sobe um aluno para mais cedo ---------- */
+/* Move a aula para mais cedo. Com cont=1 (vindo de um horário Vago), o horário que ficou
+   livre abre sozinho para você continuar subindo os próximos alunos. */
+function adiantar(k,h,cont){const l=aulasDia(sel).find(x=>x.k==k);if(!l)return;{const oc=ativosHora(sel,h);if(oc.length>=CAP||oc.some(x=>x.aval)||(l.aval&&oc.length))return}
+const oh=parseInt(l.hora),m=D.mov[k];D.mov[k]={...(m||{}),de:m?m.de:l.hora,para:h};save();fechar();render();
+if(cont&&aulasDia(sel).some(x=>!x.falta&&x.hora>hora2(oh)&&D.feitas[x.k]===undefined))sheetVago(oh)}
+function desfazAdiant(k){const m=D.mov[k];if(m){const x=k.startsWith('a|')?D.aulas.find(a=>'a|'+a.id==k):null,dt=x?x.data:k.split('|')[1];if(!cabe(dt,m.de,k,!!(x&&x.tipo=='aval'))){aviso('Não dá para desfazer: o horário original já foi ocupado por outro aluno.');return}}delete D.mov[k];save();render()}
+
+/* ---------- ENCERRAR DIA: boa noite + primeiro atendimento de amanhã ---------- */
+function encerrar(){const T=aulasDia(sel),L=T.filter(l=>!l.falta),n=L.filter(l=>D.feitas[l.k]).length,fl=T.length-L.length;
+const p=aulasDia(ad(sel,1)).filter(l=>!l.falta)[0]; /* lista já vem em ordem de horário */
+sheet(`<div class="noite"><div class="em">${ico('moon')}</div><p>${esc(frase(BOA_NOITE,sel))}</p>
+<p class="sub" style="font-weight:400">${L.length?`Resumo: ${n} de ${L.length} aulas feitas${fl?` · ${fl} falta${fl>1?'s':''}`:''}`:'Hoje não havia aulas na agenda.'}</p>
+<p class="sub" style="font-weight:600;margin:-4px 0 0">Tempo trabalhado: ${fmtH(minDia(sel))}</p>
+<div class="amanha"><small>Amanhã</small><br>${p?`O primeiro ${p.aval?'atendimento':'aluno'} é <b>${esc(p.nome)}</b>${p.aval?' (avaliação física)':''} às <b>${hh(p.hora)}</b>${p.ac?', na <b>'+esc(p.ac)+'</b>':''}.`:'Amanhã ainda não há aulas agendadas. Dia livre para descansar!'}</div>
+<button class="btn" onclick="fechar()">Boa noite</button></div>`)}
+
+/* ---------- ADICIONAR (botão "+ Aula" ou toque num horário Vago): avulsa, fixa ou avaliação ---------- */
+let ADD={};
+function sheetAdd(t,hr,dt){EXC=null;AT=t||'avulsa';ADD={h:hr||'08:00',d:dt||sel};drawAdd()}
+function setAT(t){const g=i=>($('#'+i)||{}).value;ADD={h:g('a-h')||ADD.h,d:g('a-d')||ADD.d};if(t!='aval'&&ADD.h&&ADD.h.slice(3)!='00')ADD.h=ADD.h.slice(0,2)+':00'; /* só Avaliação aceita minutos */
+const n=g('a-n')||'',a=g('a-a')||'';
+AT=t;drawAdd();$('#a-n').value=n;if($('#a-a'))$('#a-a').value=a}
+function drawAdd(){SOLIVRE=AT=='aval';const w=pd(sel).getDay();
+sheet(`<div class="sh"><h2>Adicionar</h2><button class="x" onclick="fechar()">✕</button></div>
+<div class="seg"><button class="${AT=='avulsa'?'on':''}" onclick="setAT('avulsa')">Aula avulsa</button><button class="${AT=='fixa'?'on':''}" onclick="setAT('fixa')">Aula fixa</button><button class="${AT=='aval'?'on':''}" onclick="setAT('aval')">Avaliação</button></div>
+<label>${AT=='aval'?'Nome da pessoa (obrigatório)':'Nome do aluno (obrigatório)'}</label><input class="in" id="a-n" list="dl-n" placeholder="Digite o nome" autocomplete="off" onchange="pick()"><datalist id="dl-n">${D.alunos.map(a=>`<option value="${esc(a.nome)}">`).join('')}</datalist>
+${AT=='fixa'?`<label>Dia da semana</label><select class="in" id="a-w">${DIAS.map((d,i)=>`<option value="${i}"${i==w?' selected':''}>${d}</option>`).join('')}</select>`:`<label>Data</label><input class="in" type="date" id="a-d" value="${ADD.d}" onchange="liv()">`}
+<label>Horário${AT=='aval'?' (pode usar minutos, ex.: 8:20)':''}</label>${horaInput(ADD.h)}
+<div id="liv"></div>
+${AT=='aval'?'':`<label>Academia</label><input class="in" id="a-a" list="dl-a" placeholder="Ex.: Selfit" autocomplete="off">${dlAc()}`}
+${AT=='fixa'?'':`<label>Valor (se tiver)</label><input class="in" type="number" inputmode="decimal" id="a-v" placeholder="0"><p class="sub" style="margin:8px 0 0">Depois de feita, fica em Financeiro › Avulsa/Avaliação até você marcar como paga. O nome, a data e o valor ficam no histórico.</p>`}
+<button class="btn" onclick="svAdd()">Adicionar</button>`);liv()}
+/* Mostra os horários livres do dia escolhido; toque num deles para escolher. */
+function pick(){const n=$('#a-n').value.trim().toLowerCase(),a=D.alunos.find(x=>x.nome.toLowerCase()==n);if(!a)return;
+const ac=$('#a-a');if(ac&&!ac.value)ac.value=a.academia||'';const v=$('#a-v');if(v&&a.tipo=='avulso'&&a.valor)v.value=a.valor}
+function svAdd2(){const n=$('#a-n').value.trim(),h=$('#a-h').value,ac=($('#a-a')||{value:''}).value.trim();
+if(!n){aviso('Escreva o nome.');return}
+if(AT=='fixa'){let a=D.alunos.find(x=>x.nome.toLowerCase()==n.toLowerCase());if(vagasFixo(+$('#a-w').value,h,a&&a.id)<=0){aviso('Horário indisponível (2 alunos ou avaliação nas próximas semanas) em '+DIAS[+$('#a-w').value]+' às '+hh(h)+'.');return}
+if(!a){a={id:uid(),nome:n,academia:ac,fixos:[],tipo:'mensal',valor:0,venc:5,aval:[],criado:hoje()};D.alunos.push(a)}
+if(ac&&!a.academia)a.academia=ac;a.fixos=a.fixos||[];a.fixos.push({dia:+$('#a-w').value,hora:h});save();fechar();render();return}
+const d=$('#a-d').value;if(!d){aviso('Escolha a data.');return}
+const v=num($('#a-v').value),tp=AT=='aval'?'aval':'avulsa',ok=()=>{D.aulas.push({id:uid(),nome:n,data:d,hora:h,academia:ac,valor:v,tipo:tp});sel=d;save();fechar();render()};
+ok()}
+
+/* ---------- ALUNOS (lista, cadastro, avaliação física e histórico de faltas) ---------- */
+function vAlunos(){return`<h1>Alunos</h1><div style="height:8px"></div><input class="in" type="search" placeholder="Buscar por nome ou academia" value="${esc(q)}" oninput="q=this.value;lista()"><div style="height:12px"></div><div id="lista"></div>`}
+function lista(){const n=x=>(x||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''),qq=n(q);
+const A=D.alunos.filter(a=>n(a.nome+' '+a.academia).includes(qq)).sort((a,b)=>a.nome.localeCompare(b.nome));
+$('#lista').innerHTML=A.length?A.map(a=>{const fx=(a.fixos||[]).slice().sort((x,y)=>x.dia-y.dia||x.hora.localeCompare(y.hora)).map(f=>DC[f.dia]+' '+f.hora).join(' · ');
+return`<div class="card" onclick="sheetAluno('${a.id}')"><b>${esc(a.nome)}</b> ${tag(a.academia)}<div class="sub">${fx||'Sem horário fixo'}</div><div class="sub">${a.tipo=='avulso'?'Avulsa · '+brl(a.valor)+' por aula':a.valor?brl(a.valor)+' · vence dia '+a.venc:'Sem valor definido'}</div></div>`}).join(''):`<div class="card vazio">${D.alunos.length?'Ninguém encontrado.':'Nenhum aluno ainda.<br>Toque em <b>+ Aluno</b> para começar.'}</div>`}
+function sheetAluno(id){XD=new Set();XH='08:00';E=id?JSON.parse(JSON.stringify(D.alunos.find(a=>a.id==id))):{id:uid(),nome:'',academia:'',fixos:[],tipo:'mensal',valor:'',venc:5,aval:[]};E.fixos=E.fixos||[];E.aval=E.aval||[];drawAluno()}
+function drawAluno(){const ex=D.alunos.some(a=>a.id==E.id);
+sheet(`<div class="sh"><h2>${ex?'Aluno':'Novo aluno'}</h2><button class="x" onclick="fechar()">✕</button></div>
+<label>Nome</label><input class="in" id="f-n" value="${esc(E.nome)}" placeholder="Ex.: Marina">
+<label>Academia</label><input class="in" id="f-a" list="dl-a" value="${esc(E.academia)}" placeholder="Ex.: Selfit" autocomplete="off">${dlAc()}
+<label>Dias e horários fixos</label>
+${E.fixos.map((f,i)=>`<div class="fx"><span>${DIAS[f.dia]} às ${f.hora}</span><button class="x" onclick="rmFx(${i})">✕</button></div>`).join('')}
+<div class="chips" style="margin:2px 0 10px">${DC.map((d,i)=>`<button class="chip sm${XD.has(i)?' on':''}" onclick="togDia(${i})">${d}</button>`).join('')}</div>
+${hrSel('x-h',XH)}
+<button class="btn ghost" onclick="addFx()">+ Adicionar horários</button>
+<p class="sub" style="margin-top:6px">Toque nos dias (pode marcar vários) e escolha a hora. Cada horário aceita até 2 alunos.</p>
+<label>Como cobra?</label>
+<select class="in" id="f-t" onchange="collect();drawAluno()"><option value="mensal"${E.tipo=='mensal'?' selected':''}>Mensalidade (vence todo mês)</option><option value="avulso"${E.tipo=='avulso'?' selected':''}>Aula avulsa (paga por aula)</option></select>
+<div class="r2"><div><label>${E.tipo=='avulso'?'Valor por aula (R$)':'Valor (R$)'}</label><input class="in" id="f-v" type="number" inputmode="decimal" value="${E.valor}" placeholder="0"></div>
+${E.tipo=='mensal'?`<div><label>Vence no dia</label><input class="in" id="f-vc" type="number" inputmode="numeric" min="1" max="31" value="${E.venc}"></div>`:''}</div>
+<h3>Observações</h3><textarea class="in" id="f-o" rows="3" placeholder="Preferências de horário, combinados, informações importantes">${esc(E.obs||'')}</textarea>
+<h3>Histórico</h3>${hist(E.id)}
+<h3>Faltas</h3>${Object.values(D.faltas).filter(f=>f.aid?f.aid==E.id:f.nome.toLowerCase()==E.nome.trim().toLowerCase()).sort((a,b)=>b.data.localeCompare(a.data)).map(f=>`<div class="sub">${fd(f.data)} às ${f.hora}</div>`).join('')||'<p class="sub">Nenhuma falta registrada.</p>'}
+<button class="btn" onclick="svAluno()">Salvar aluno</button>
+${ex?'<button class="lnk" onclick="delAluno()">Excluir aluno</button>':''}`)}
+function collect(){const g=i=>{const e=$('#'+i);return e?e.value:null};
+E.nome=g('f-n')??E.nome;E.academia=(g('f-a')??E.academia).trim();E.tipo=g('f-t')??E.tipo;E.valor=g('f-v')??E.valor;E.venc=g('f-vc')??E.venc;E.obs=g('f-o')??E.obs}
+function rmFx(i){collect();E.fixos.splice(i,1);drawAluno()}
+function commit(){collect();E.nome=E.nome.trim();if(!E.nome){aviso('Escreva o nome do aluno primeiro.');return false}
+if(!E.criado)E.criado=hoje();E.valor=num(E.valor);E.venc=Math.min(31,Math.max(1,parseInt(E.venc)||5));
+const c=JSON.parse(JSON.stringify(E)),i=D.alunos.findIndex(a=>a.id==E.id);i<0?D.alunos.push(c):D.alunos[i]=c;save();return true}
+function svAluno(){if(commit()){fechar();render()}}
+function delAluno(){ask('Excluir este aluno e o histórico dele?',()=>{D.alunos=D.alunos.filter(a=>a.id!=E.id);save();fechar();render()},'Excluir')}
+
+/* ---------- DINHEIRO ----------
+   Duas abas dentro de Faturamento:
+   - Mensalidades: alunos com valor mensal e dia de vencimento (mês atual). Faltas NÃO alteram nada aqui.
+   - Avulsa/Avaliação: aulas avulsas e avaliações JÁ FEITAS e ainda NÃO pagas (de qualquer dia).
+     Ficam na lista, dia após dia, até você tocar em "Pago". Aí o valor entra em "Já ganhou"
+     (D.recebidos, só valor e data, SEM nome) e o nome da pessoa é apagado. */
+let FT='mens';
+function itens(ym){ym=ym||hoje().slice(0,7);const I=[],ult=new Date(+ym.slice(0,4),+ym.slice(5),0).getDate();
+D.alunos.forEach(a=>{if(a.tipo!='avulso'&&a.valor>0&&!(a.criado&&ym<a.criado.slice(0,7)&&!D.pagos['m|'+a.id+'|'+ym]))I.push({k:'m|'+a.id+'|'+ym,nome:a.nome,v:a.valor,due:ym+'-'+String(Math.min(a.venc||5,ult)).padStart(2,'0'),txt:'Mensalidade'})});return I}
+/* Avulsas/avaliações feitas, com valor e ainda sem pagar (mais antigas primeiro). */
+function pendAv(){return D.aulas.filter(x=>!x.paga&&x.valor>0&&D.feitas['a|'+x.id]!==undefined).sort((a,b)=>a.data.localeCompare(b.data)||a.hora.localeCompare(b.hora))}
+function row(i){return`<div class="card pay${i.p?' paid':''}"><div class="grow"><b>${esc(i.nome)}</b><div class="sub">${i.txt} · ${i.p?'pago ✓':'vence '+fd2(i.due)+' · '+quando(diasPara(i.due))}</div></div><div class="amt">${brl(i.v)}</div><button class="btn sm ${i.p?'ghost':'okb'}" onclick="pagar('${i.k}')">${i.p?'Desfazer':'Pago'}</button></div>`}
+function pagar(k){if(D.pagos[k])delete D.pagos[k];else{const a=D.alunos.find(x=>x.id==k.split('|')[1]);D.pagos[k]=a&&a.valor>0?a.valor:true;toast('Pagamento registrado')} /* guarda o valor pago: mudar o preço depois não altera o histórico */save();render()}
+function rowAv(x){return`<div class="card pay"><div class="grow"><b>${esc(x.nome)||'Sem nome'}</b><div class="sub">${x.tipo=='aval'?'Avaliação física':'Aula avulsa'} · feita em ${fd2(x.data)}</div></div><div class="amt">${brl(x.valor)}</div><button class="btn sm okb" onclick="pagarAv('${x.id}')">Pago</button></div>`}
+/* PAGO (avulsa/avaliação): guarda só o valor e apaga o nome da pessoa. */
+function pagarAv(id){const x=D.aulas.find(a=>a.id==id);if(!x)return;
+ask('Marcar '+brl(x.valor)+' como pago? O valor entra no histórico com nome e data.',()=>{
+D.recebidos.push({id:uid(),nome:x.nome,valor:x.valor,data:hoje(),tipo:x.tipo=='aval'?'aval':'avulsa'});
+const k='a|'+id;x.valor=0;x.paga=true;if(D.feitas[k])D.feitas[k]={nota:''};save();render()},'Marcar como pago')}
+/* LIMPEZA AUTOMÁTICA (privacidade), roda ao abrir o app e ao virar o dia:
+   avulsas/avaliações de dias passados que já estão resolvidas (feitas sem valor, pagas, ou que faltaram)
+   são apagadas junto com o nome. Só ficam guardadas as que ainda faltam pagar. */
+function limpa(){const t=hoje();D.recebidos=D.recebidos||[];D.despFixas=D.despFixas||[];D.despPagas=D.despPagas||{};D.despLanc=D.despLanc||[];D.extras=D.extras||[];D.arq=D.arq||[];D.alunos.forEach(a=>{if(!a.criado)a.criado=hoje().slice(0,8)+'01'});
+D.aulas.forEach(x=>{const k='a|'+x.id;if(D.pagos[k]){if(x.valor>0){D.recebidos.push({id:uid(),nome:x.nome,valor:x.valor,data:x.data,tipo:x.tipo=='aval'?'aval':'avulsa'});x.valor=0;x.paga=true}delete D.pagos[k]}}); /* converte pagamentos do modelo antigo */
+D.aulas=D.aulas.filter(x=>{const k='a|'+x.id,f=D.faltas[k],ok=D.feitas[k]!==undefined,fim=x.data<t&&((ok&&!(x.valor>0))||(f&&!f.aid));
+if(fim){if(ok&&!ARQ().some(a=>a.id==x.id))ARQ().push({id:x.id,d:x.data,h:x.hora,v:x.tipo=='aval'?'aval':'aula'}); /* guarda só data/hora/tipo (sem nome) para as Horas trabalhadas */
+delete D.feitas[k];delete D.mov[k];delete D.faltas[k]}return!fim});save()}
+
+/* ---------- BACKUP (salvar/restaurar .json, exemplo e apagar tudo) ---------- */
+function vBk(){return`<h1>Backup</h1><div style="height:8px"></div><div class="card">${ico('lock')} Seus dados ficam guardados <b>só neste iPhone</b>. Nada vai para a internet.<br><br>Salve um backup de vez em quando. Ao tocar no botão, escolha <b>Salvar em Arquivos</b>.<br><br>Último backup: <b>${ultimoTxt()}</b></div>
+<button class="btn" onclick="salvar()">Salvar backup</button>
+<button class="btn ghost" onclick="$('#fi').click()">Restaurar backup</button><input type="file" id="fi" accept=".json,application/json" hidden onchange="restaurar(this)">
+<h3>Dados de exemplo</h3><p class="sub">Para testar o visual antes de usar os dados reais.</p>
+<button class="btn ghost" onclick="exemplo()">Carregar exemplo</button><button class="btn ghost" onclick="limpar()">Apagar tudo</button>`}
+async function salvar(){const nome='backup-rotina-'+hoje()+'.json',b=new Blob([JSON.stringify({app:'rotina-personal',v:1,dados:D})],{type:'application/json'}),f=new File([b],nome,{type:'application/json'});
+try{if(navigator.canShare&&navigator.canShare({files:[f]})){await navigator.share({files:[f]});marcaBackup();return}}catch(e){if(e.name=='AbortError')return}
+const u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=nome;document.body.appendChild(a);a.click();a.remove();marcaBackup();setTimeout(()=>URL.revokeObjectURL(u),5000)}
+function restaurar(i){const f=i.files[0];if(!f)return;const r=new FileReader();
+r.onload=()=>{let d;try{const j=JSON.parse(r.result);d=j.dados||j;if(!Array.isArray(d.alunos)||d.alunos.some(a=>!a||!a.id||!a.nome))throw 0;sanea(d)}catch(e){aviso('Esse arquivo não parece ser um backup deste app.');i.value='';return}
+ask('Isso troca tudo que está no app pelos dados do backup. Continuar?',()=>{try{localStorage.setItem(K+'_antes_restaurar',JSON.stringify(D))}catch(_){}D={...base(),...d};limpa();render();aviso('Backup restaurado ✓')},'Restaurar');i.value=''};r.readAsText(f)}
+function exemplo(){D.alunos.length?ask('Isso troca seus dados atuais pelos de exemplo. Continuar?',exemplo2,'Carregar exemplo'):exemplo2()}
+function exemplo2(){
+const t=new Date(),dm=t.getDate(),ym=hoje().slice(0,7),w=t.getDay();
+const A=(n,ac,fx,tp,v,vc)=>({id:uid(),nome:n,academia:ac,fixos:fx.map(([d,h])=>({dia:d,hora:h})),tipo:tp,valor:v,venc:vc,aval:[]});
+const cam={id:uid(),nome:'Camila Rocha',data:ad(hoje(),-1),hora:'16:00',academia:'',valor:120,tipo:'aval'};
+const m=A('Marina Souza','Selfit',[[1,'07:00'],[3,'07:00'],[5,'07:00']],'mensal',480,Math.max(1,dm-3)),
+c=A('Carlos Lima','Selfit',[[w,'18:00'],[(w+2)%7,'18:00']],'mensal',400,dm),
+r=A('Renata Alves','Academia do Bairro',[[2,'08:00'],[4,'08:00']],'mensal',350,Math.min(28,dm+7)),
+p=A('Paula Dias','Studio Vida',[],'avulso',90,5);
+D={cfg:D.cfg,alunos:[m,c,r,p],aulas:[cam,{id:uid(),nome:p.nome,data:hoje(),hora:'09:00',academia:p.academia,valor:90},{id:uid(),nome:p.nome,data:ad(hoje(),2),hora:'10:00',academia:p.academia,valor:90},{id:uid(),nome:'Julia Prado',data:ad(hoje(),1),hora:'10:00',academia:'',valor:0,tipo:'aval'}],feitas:{['a|'+cam.id]:{nota:''}},faltas:{},mov:{},recebidos:[],pagos:{['m|'+r.id+'|'+ym]:true}};
+save();tab='hoje';sel=hoje();render()}
+function limpar(){ask('Apagar TODOS os dados deste aparelho? Isso não pode ser desfeito.',()=>{D=base();save();render()},'Apagar tudo')}
+
+/* =====================================================
+   NOVAS TELAS: Painel do dia, Agenda semanal, Mais (Relatórios, Configurações, Backup)
+   ===================================================== */
+let MS='menu',PROX=null,RP='mes'; /* MS = subtela de "Mais"; RP = período do relatório; AF = filtro de alunos */
+/* ✏️ SAUDAÇÃO DO TOPO DA TELA INICIAL, por horário: 04:00–11:59 Bom dia (sol + frase do dia) · 12:00–17:59 Boa tarde (sol + versículo) · 18:00–23:59 Boa noite (só lua) · 00:00–03:59 Boa noite (coruja + frase) */
+const saud=()=>{const h=new Date().getHours();return(h>=4&&h<12?'Bom dia':h>=12&&h<18?'Boa tarde':'Boa noite')+(D.cfg.nome?', '+esc(D.cfg.nome):'')};
+function subTopo(h,t){const mk=x=>`<p class="sub" style="margin:6px 0 14px">${x}</p>`;
+if(h>=4&&h<12)return mk(ico('sun')+' '+esc(frase(BOM_DIA,t))); /* manhã: sol + frase do dia */
+if(h>=12&&h<18)return mk(ico('sun')+' '+esc(frase(VERSICULOS,t))); /* tarde: sol + versículo do dia */
+if(h>=18)return mk(ico('moon')); /* noite: só a lua (as frases de BOA_NOITE aparecem no botão Encerrar dia) */
+return mk(ico('owl')+' Você já deveria estar dormindo né corujinha?')} /* madrugada */
+/* Painel de resumo do dia (cartões + barra de progresso) */
+function dash(R,n,lv,nx){const pc=R.length?Math.round(n/R.length*100):0;
+return`<div class="dash"><div class="card"><small>Agendadas</small><b>${R.length}</b></div><div class="card"><small>Concluídas</small><b>${n}</b></div>
+<div class="card"><small>Próximo</small><b>${nx?hh(nx.hora):'—'}</b><small>${nx?(esc(nx.nome)||'Atendimento'):'Nada pendente'}</small></div><div class="card"><small>Livres</small><b>${lv}</b></div>
+<div class="card wide"><small>Progresso do dia · ${pc}%</small><div class="bar"><i style="width:${pc}%"></i></div></div></div>`}
+/* ---------- AGENDA (visão da semana: dias cheios, dias livres, horários disponíveis) ---------- */
+function vSemana(){const t=hoje(),s0=ad(sel,-pd(sel).getDay()),d0=pd(s0),d6=pd(ad(s0,6)),nh=H_FIM-H_INI+1;let tot=0;
+const rows=[0,1,2,3,4,5,6].map(i=>{const k=ad(s0,i),A=aulasDia(k).filter(l=>!l.falta),lv=livres(k).length,pc=Math.round((nh-lv)/nh*100);tot+=A.length;
+return`<div class="card dia" onclick="sel='${k}';AV='dia';render()"><div class="n"><small>${DC[i]}</small><b style="${k==t?'color:var(--pri)':''}">${+k.slice(8)}</b></div><div class="grow"><b>${A.length} atendimento${A.length==1?'':'s'}</b><div class="sub">${lv} horário${lv==1?'':'s'} livre${lv==1?'':'s'}</div><div class="bar"><i style="width:${pc}%;background:var(--pri)"></i></div></div></div>`}).join('');
+return`<p class="sub">${d0.getDate()} ${MES[d0.getMonth()].slice(0,3)} – ${d6.getDate()} ${MES[d6.getMonth()].slice(0,3)} · ${tot} atendimento${tot==1?'':'s'} na semana</p>
+<div class="wk"><button class="ar" onclick="sel=ad(sel,-7);render()">‹</button><div class="grow"></div><button class="ar" onclick="sel=ad(sel,7);render()">›</button></div>${rows}<p class="sub">Toque num dia para abrir a agenda dele.</p>`}
+/* ---------- MAIS ---------- */
+const back=()=>`<button class="back" onclick="MS='menu';GO=true;render()">‹ Mais</button>`;
+function vMais(){if(MS=='bk')return back()+vBk();if(MS=='rel')return back()+vRel();if(MS=='cfg')return back()+vCfg();
+const it=(k,t,s)=>`<button class="card menu" onclick="MS='${k}';GO=true;render();scrollTo(0,0)"><span><b>${t}</b><div class="sub">${s}</div></span><span style="color:var(--tx2);font-size:24px">›</span></button>`;
+return`<h1>Mais</h1><div style="height:10px"></div>${it('rel','Relatórios','Aulas, faltas, horários e faturamento')}${it('cfg','Configurações','Seu nome, horário de atendimento e preferências')}${it('bk','Backup e dados','Salvar, restaurar e exportar')}`}
+/* ---------- CONFIGURAÇÕES (nome, horário de atendimento, preferências, armazenamento) ---------- */
+function vCfg(){const c=D.cfg,kb=Math.max(1,Math.round(JSON.stringify(D).length/1024));
+const opt=(a,b,v)=>{let o='';for(let h=a;h<=b;h++)o+=`<option value="${h}"${h==v?' selected':''}>${h}h</option>`;return o};
+return`<h1>Configurações</h1><label>Seu nome</label><input class="in" id="c-n" value="${esc(c.nome)}" placeholder="Ex.: Natália" onchange="svCfg()">
+<h3>Horário de atendimento</h3><div class="r2"><div><label>Começa às</label><select class="in" id="c-i" onchange="svCfg()">${opt(0,23,c.hIni)}</select></div><div><label>Termina às</label><select class="in" id="c-f" onchange="svCfg()">${opt(1,23,c.hFim)}</select></div></div>
+<h3>Preferências</h3><label style="display:flex;align-items:center;gap:12px;margin:0"><span class="grow">Mostrar horários vagos na agenda</span><input type="checkbox" id="c-v" ${c.vagos!==false?'checked':''} onchange="svCfg()" style="width:26px;height:26px"></label>
+<h3>Armazenamento</h3><div class="card">Os dados ocupam cerca de <b>${kb} KB</b> e ficam só neste iPhone, sem internet. Salve um backup de vez em quando em <b>Backup e dados</b>.</div>`}
+function svCfg(){const c=D.cfg,i=+$('#c-i').value,f=+$('#c-f').value;if(f<=i){aviso('O horário final precisa ser depois do inicial.');render();return}
+c.nome=$('#c-n').value.trim();c.hIni=i;c.hFim=f;c.vagos=$('#c-v').checked;save();render()}
+/* ---------- RELATÓRIOS (tudo calculado dos dados reais; nada inventado) ---------- */
+function rango(){const t=hoje(),ym=t.slice(0,7);if(RP=='mes')return[ym+'-01',ym+'-31'];
+if(RP=='ant'){const d=pd(ym+'-01');d.setMonth(d.getMonth()-1);const m=iso(d).slice(0,7);return[m+'-01',m+'-31']}
+if(RP=='90')return[ad(t,-90),t];return['0000-00-00','9999-99-99']}
+/* Recebido num mês: mensalidades marcadas como pagas (valor atual do aluno) + avulsas/avaliações pagas. */
+function recMes(ym){let m=0;Object.keys(D.pagos).forEach(k=>{const p=k.split('|');if(p[0]=='m'&&p[2]==ym){const x=D.pagos[k],a=D.alunos.find(y=>y.id==p[1]);if(typeof x=='number')m+=x;else if(a)m+=a.valor||0}});
+const v=D.recebidos.filter(r=>r.data.slice(0,7)==ym).reduce((s,r)=>s+r.valor,0)+D.extras.filter(x=>x.data.slice(0,7)==ym).reduce((s,x)=>s+x.valor,0);return{m,v,t:m+v}}
+function vRel(){const[a,b]=rango(),inr=d=>d>=a&&d<=b,hrsT=datasTrab().filter(inr).reduce((s,d)=>s+minDia(d),0),nm=id=>(D.alunos.find(x=>x.id==id)||{}).nome,F=[];
+Object.keys(D.feitas).forEach(k=>{const p=k.split('|');if(p.length==3&&inr(p[1]))F.push({aid:p[0],hora:p[2]})});
+D.aulas.forEach(x=>{if(!x.paga&&D.feitas['a|'+x.id]!==undefined&&inr(x.data))F.push({aid:null,hora:x.hora})});
+const R=D.recebidos.filter(r=>inr(r.data)),fal=Object.values(D.faltas).filter(f=>inr(f.data)),pa={},hc={};
+F.forEach(f=>{if(f.aid)pa[f.aid]=(pa[f.aid]||0)+1;const h=parseInt(f.hora);hc[h]=(hc[h]||0)+1});
+const L=Object.entries(pa).sort((x,y)=>y[1]-x[1]),avl=R.length+F.filter(f=>!f.aid).length,H=[];
+for(let h=H_INI;h<=H_FIM;h++)H.push([h,hc[h]||0]);
+const top=H.slice().sort((x,y)=>y[1]-x[1]).filter(x=>x[1]>0).slice(0,5),low=H.slice().sort((x,y)=>x[1]-y[1]||x[0]-y[0]).slice(0,5);
+const hb=(l,v,mx,tx)=>`<div class="hbar"><span>${l}</span><div class="bar"><i style="width:${mx?Math.round(v/mx*100):0}%"></i></div><em>${tx}</em></div>`,vz='<p class="sub">Ainda não há dados neste período.</p>';
+const M=[];for(let i=5;i>=0;i--){const d=new Date();d.setDate(1);d.setMonth(d.getMonth()-i);const ym=iso(d).slice(0,7);M.push([MES[d.getMonth()].slice(0,3),recMes(ym).t])}
+const cur=M[5][1],prev=M[4][1],mxm=Math.max(...M.map(x=>x[1])),G=M.map((x,i)=>[x[0],despMes(ymOf(i-5)).t]),mxg=Math.max(...G.map(x=>x[1]));
+return`<h1>Relatórios</h1><select class="in" onchange="RP=this.value;render()">${[['mes','Este mês'],['ant','Mês passado'],['90','Últimos 90 dias'],['tudo','Todo o período']].map(([k,t])=>`<option value="${k}"${RP==k?' selected':''}>${t}</option>`).join('')}</select>
+<div class="dash" style="margin-top:12px"><div class="card wide"><small>Horas trabalhadas</small><b>${fmtH(hrsT)}</b></div><div class="card"><small>Aulas realizadas</small><b>${F.length+R.length}</b></div><div class="card"><small>Faltas</small><b>${fal.length}</b></div><div class="card"><small>Alunos ativos</small><b>${D.alunos.length}</b></div><div class="card"><small>Academias</small><b>${new Set(D.alunos.map(a=>a.academia).filter(Boolean)).size}</b></div></div>
+${porAcad()}<h3>Atendimentos por aluno</h3>${L.length||avl?L.map(([id,n])=>hb(esc(nm(id)||'Ex-aluno'),n,L[0][1],n)).join('')+(avl?hb('Avulsas/aval.',avl,Math.max(avl,L.length?L[0][1]:0),avl):''):vz}
+<h3>Horários mais ocupados</h3>${top.length?top.map(([h,n])=>hb(h+'h',n,top[0][1],n)).join(''):vz}
+<h3>Horários menos usados</h3>${top.length?low.map(([h,n])=>hb(h+'h',n,Math.max(1,top[0][1]),n)).join(''):vz}
+<h3>Recebido por mês</h3>${M.map(([l,v])=>hb(l,v,mxm,brl(v))).join('')}
+<h3>Gasto por mês</h3>${G.map(([l,v])=>hb(l,v,mxg,brl(v))).join('')}
+<p class="sub">${prev>0?'Este mês vs mês anterior: '+(cur>=prev?'+':'')+Math.round((cur-prev)/prev*100)+'%.':'Sem recebimentos no mês anterior para comparar.'} Valores são faturamento recebido, não lucro. Mensalidades usam o valor atual de cada aluno.</p>`}
+
+/* =====================================================
+   EVOLUÇÃO 2: ícones, avisos rápidos, remarcar, financeiro por mês, histórico do aluno
+   ===================================================== */
+let AV='dia',FM=0,GO=false,RM=null,EXC=null,FK=0;
+/* Ícones vetoriais (traço fino, herdam a cor do texto) */
+const IC={sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',moon:'<path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/>',coin:'<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.8c0-1 1-1.6 2.5-1.6s2.5.6 2.5 1.6-1 1.5-2.5 1.8-2.5.8-2.5 1.8 1 1.6 2.5 1.6 2.5-.6 2.5-1.6"/>',lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',owl:'<path d="M6.5 6.5L5 3.5l3 1.2M17.5 6.5L19 3.5l-3 1.2"/><path d="M5 10c0-3.3 3-6 7-6s7 2.7 7 6v5c0 3.3-3 6-7 6s-7-2.7-7-6z"/><circle cx="9.5" cy="10.5" r="2"/><circle cx="14.5" cy="10.5" r="2"/><path d="M12 12.5v2M9 18l-1 2M15 18l1 2"/>'};
+const ico=n=>`<svg class="ic" viewBox="0 0 24 24">${IC[n]}</svg>`;
+/* Aviso rápido que some sozinho (para ações concluídas) */
+function toast(m){const e=$('#tt');e.textContent=m;e.classList.add('on');clearTimeout(toast.t);toast.t=setTimeout(()=>e.classList.remove('on'),1800)}
+function svAdd(){if(AT!='fixa'){const d=$('#a-d').value,h=$('#a-h').value,oc=d?ativosHora(d,h):[];
+if(!h){aviso(AT=='aval'?'Informe o horário da avaliação.':'Escolha o horário.');return}
+if(AT=='aval'&&d==hoje()&&h<=p2(new Date().getHours())+':'+p2(new Date().getMinutes())){aviso('Esse horário já passou. Escolha um horário a partir de agora.');return}
+if(AT=='aval'&&oc.length){aviso('Avaliação só pode ser marcada em horário 100% livre (sem nenhum aluno). Escolha outro horário.');return}
+if(oc.some(l=>l.aval)){aviso('Esse horário tem uma avaliação marcada e é exclusivo. Escolha outro horário.');return}
+if(oc.length>=CAP){aviso('Horário lotado: já tem 2 alunos às '+hh(h)+' nesse dia. Escolha outro horário.');return}}svAdd2()}
+/* ---------- FICHA DO ALUNO: histórico de atendimentos e de mensalidades ---------- */
+function hist(id){const F=Object.keys(D.feitas).filter(k=>k.startsWith(id+'|')).map(k=>k.split('|')[1]).sort().reverse(),P=Object.keys(D.pagos).filter(k=>k.startsWith('m|'+id+'|')).map(k=>k.split('|')[2]).sort().reverse();
+return`<p class="sub">Aulas realizadas: <b>${F.length}</b>${F.length?' · últimas: '+F.slice(0,4).map(fd2).join(', '):''}</p><p class="sub">Mensalidades pagas: <b>${P.length}</b>${P.length?' · '+P.slice(0,4).map(m=>m.slice(5)+'/'+m.slice(2,4)).join(', '):''}</p>`}
+/* ---------- FINANCEIRO por mês: recebido x a receber, histórico de recebimentos ---------- */
+const ymOf=o=>{const d=new Date();d.setDate(1);d.setMonth(d.getMonth()+o);return iso(d).slice(0,7)};
+function vGrana(){const t=hoje(),ym=ymOf(FM),dm=pd(ym+'-01'),I=itens(ym).map(i=>({...i,p:!!D.pagos[i.k],v:typeof D.pagos[i.k]=='number'?D.pagos[i.k]:i.v})),PA=FM==0?pendAv():[],RC=D.recebidos.filter(r=>r.data.slice(0,7)==ym).sort((a,b)=>b.data.localeCompare(a.data));
+const sm=L=>L.reduce((s,i)=>s+i.v,0),P=I.filter(i=>!i.p),EX=D.extras.filter(x=>x.data.slice(0,7)==ym).sort((a,b)=>b.data.localeCompare(a.data)),rcv=RC.reduce((s,r)=>s+r.valor,0)+EX.reduce((s,x)=>s+x.valor,0),pend=sm(P)+PA.reduce((s,x)=>s+x.valor,0)+(FM==0?atrasAnt().reduce((s,x)=>s+x.v,0):0);
+const sec=(tt,L,c)=>L.length?`<h3 class="${c}">${tt}</h3>`+L.sort((a,b)=>a.due.localeCompare(b.due)).map(row).join(''):'';
+const DM=despMes(ym);return`<h1>Financeiro</h1><div class="wk"><button class="ar" onclick="FM--;render()">‹</button><div class="grow" style="text-align:center"><b style="font-size:19px">${cap(MES[dm.getMonth()])} ${dm.getFullYear()}</b></div><button class="ar" onclick="FM++;render()">›</button></div>
+<div class="r2 mb"><div class="card big g" style="margin:0"><small>Recebido</small><b>${brl(sm(I.filter(i=>i.p))+rcv)}</b></div><div class="card big p" style="margin:0"><small>${FM>0?'Previsto':'A receber'}</small><b>${brl(pend)}</b></div></div>
+<div class="r2 mb"><div class="card big" style="margin:0"><small>Saiu</small><b style="color:var(--terra)">${brl(DM.t)}</b></div><div class="card big" style="margin:0"><small>Saldo do mês</small><b>${brl(sm(I.filter(i=>i.p))+rcv-DM.t)}</b></div></div>
+<button class="btn ghost mb" onclick="sheetExtra()">+ Renda extra</button>
+${extraLista(EX)}
+<div class="seg s3 mb"><button class="${FT=='mens'?'on':''}" onclick="FT='mens';render()">Mensalidades</button><button class="${FT=='avul'?'on':''}" onclick="FT='avul';render()">Avulsa/Avaliação${PA.length?' ('+PA.length+')':''}</button><button class="${FT=='desp'?'on':''}" onclick="FT='desp';render()">Despesas</button></div>
+${FT=='desp'?vDesp(ym):FT=='mens'?`${I.length?'':'<div class="card vazio">Nada para cobrar neste mês.<br>Coloque o valor do aluno em <b>Alunos</b>.</div>'}
+${sec('Atrasadas',P.filter(i=>i.due<t).concat(FM==0?atrasAnt():[]),'late')}${sec('Vence hoje',P.filter(i=>i.due==t),'warn')}${sec('Próximos vencimentos',P.filter(i=>i.due>t),'')}${sec('Recebidas',I.filter(i=>i.p),'okt')}`
+:`${PA.length?'<h3 class="late">A receber</h3>'+PA.map(rowAv).join(''):(FM==0?'<div class="card vazio">Nenhuma avulsa ou avaliação para receber.</div>':'')}
+<h3>Histórico de recebimentos</h3>${RC.length?`<div class="card">${RC.map(r=>`<div class="mini"><div class="grow"><b>${esc(r.nome)||'Sem nome'}</b><div class="sub">${r.tipo=='aval'?'Avaliação física':'Aula avulsa'} · ${fd2(r.data)}</div></div><div class="amt">${brl(r.valor)}</div></div>`).join('')}</div>`:'<p class="sub">Nenhum recebimento neste mês.</p>'}
+<p class="sub">Ao tocar em <b>Pago</b>, o valor entra em "Recebido" e fica no histórico com nome e data.</p>`}`}
+
+/* =====================================================
+   EVOLUÇÃO 3: horários de hoje, reagendar, cobranças e alertas, despesas
+   ===================================================== */
+let RG=null,DS='fixa';
+const diasPara=d=>Math.round((pd(d)-pd(hoje()))/864e5); /* dias reais entre hoje e a data */
+const quando=n=>n==0?'hoje':n>0?'em '+n+' dia'+(n==1?'':'s'):'há '+(-n)+' dia'+(n==-1?'':'s');
+/* Horários para AGENDAR: se a data for hoje, só da hora atual em diante. */
+function livresAg(d){const V=livres(d);return d==hoje()?V.filter(h=>h>new Date().getHours()):V}
+/* Horas do seletor de agendamento. SOLIVRE (Avaliação Física): só horas 100% livres, sem nenhum aluno. */
+function horasOpt(d,val){const a=d==hoje()?Math.max(H_INI,new Date().getHours()+1):H_INI,oc=SOLIVRE?new Set(aulasDia(d).filter(l=>!l.falta&&l.k!=EXC).map(l=>parseInt(l.hora))):new Set(),mk=(x,y)=>{let o='';for(let h=x;h<=H_FIM;h++)if(!oc.has(h))o+=`<option value="${hora2(h)}"${hora2(h)==y?' selected':''}>${h}h</option>`;return o};
+let o=mk(a,val);if(!o&&!SOLIVRE)o=mk(H_INI,val);if(val&&val.slice(3)!='00'&&!SOLIVRE)o=`<option value="${val}" selected>${hh(val)}</option>`+o;return o}
+/* Atualiza a lista de horas, os horários livres e o aviso de conflito (EXC = a própria aula ao reagendar). */
+/* ---------- REAGENDAR (aula fixa ou avulsa: outro horário e/ou outro dia) ----------
+   Fixa: vale só para a data escolhida (D.mov[chave]={de,para,data}); a recorrência semanal não muda.
+   Avulsa/avaliação: muda a data e a hora do próprio registro. O horário antigo vira "Vago" sozinho. */
+function sheetReag(k){const l=aulasDia(sel).find(x=>x.k==k);if(!l)return;RG=k;EXC=k;SOLIVRE=!!l.aval;
+sheet(`<div class="sh"><h2>Reagendar</h2><button class="x" onclick="fechar()">✕</button></div><p class="sub">${esc(l.nome)||'Atendimento'} · ${fd2(sel)} às ${hh(l.hora)}</p>
+<label>Para o dia</label><input class="in" type="date" id="a-d" value="${sel}" onchange="liv()"><label>Horário${l.aval?' (pode usar minutos, ex.: 8:20)':''}</label>${horaInput(l.hora)}<div id="liv"></div>
+<button class="btn" onclick="svReag()">Reagendar</button>${l.fixa?'<p class="sub" style="margin-top:10px">Vale só para este dia. As próximas semanas continuam iguais.</p>':''}`);liv()}
+function svReag(){const k=RG,l=aulasDia(sel).find(x=>x.k==k);if(!l)return;const d=$('#a-d').value,h=$('#a-h').value;if(!d||!h){aviso('Escolha o dia e o horário.');return}
+if(l.aval&&d==hoje()&&h<=p2(new Date().getHours())+':'+p2(new Date().getMinutes())){aviso('Esse horário já passou. Escolha um horário a partir de agora.');return}
+{const oc=ativosHora(d,h).filter(x=>x.k!=k);if(l.aval&&oc.length){aviso('Avaliação só pode ir para horário 100% livre (sem nenhum aluno).');return}if(oc.some(x=>x.aval)){aviso('Esse horário tem uma avaliação marcada e é exclusivo.');return}if(oc.length>=CAP){aviso('Horário lotado: já tem 2 alunos às '+hh(h)+' nesse dia.');return}}
+delete D.faltas[k];
+if(!l.fixa){const x=D.aulas.find(a=>a.id==l.id);x.data=d;x.hora=h;delete D.mov[k]}
+else{const[,od,oh]=k.split('|');if(d==od&&h==oh)delete D.mov[k];else D.mov[k]={de:oh,para:h,...(d!=od?{data:d}:{})}}
+sel=d;save();fechar();render();toast('Reagendado')}
+/* ---------- COBRANÇAS EM ABERTO e ALERTAS (selo no Financeiro e cartões na tela Hoje) ---------- */
+/* Mensalidades de meses anteriores ainda não pagas (desde o mês em que o aluno foi cadastrado, máx. 12). */
+function atrasAnt(){const ym=hoje().slice(0,7),I=[];D.alunos.forEach(a=>{if(a.tipo=='avulso'||!(a.valor>0))return;
+for(let i=1;i<=12;i++){const m=ymOf(-i);if(m<(a.criado||ym).slice(0,7))break;const k='m|'+a.id+'|'+m;if(D.pagos[k])continue;
+const ult=new Date(+m.slice(0,4),+m.slice(5),0).getDate();I.push({k,nome:a.nome,v:a.valor,due:m+'-'+p2(Math.min(a.venc||5,ult)),txt:'Mensalidade '+m.slice(5)+'/'+m.slice(2,4)})}});return I}
+function cobr(){const t=hoje(),m=itens().filter(i=>!D.pagos[i.k]&&i.due<=t).length+atrasAnt().length,a=pendAv().length;return{m,a,n:m+a}}
+const dueF=(f,ym)=>ym+'-'+p2(Math.min(f.dia||1,new Date(+ym.slice(0,4),+ym.slice(5),0).getDate()));
+/* ✏️ Despesas fixas não pagas que vencem em até 3 dias (ou já venceram). Mude o 3 para outro prazo. */
+/* Olha o mês atual (inclui vencidas) e o mês seguinte (para avisar na virada do mês). */
+function alertDesp(){const L=[];[0,1].forEach(o=>{const ym=ymOf(o);D.despFixas.forEach(f=>{if(f.ini>ym||D.despPagas[f.id+'|'+ym])return;const n=diasPara(dueF(f,ym));if(o==0?n<=3:(n>=0&&n<=3))L.push({f,n,o})})});return L.sort((a,b)=>a.n-b.n)}
+function cobrCard(){const c=cobr(),A=alertDesp();let h='';
+if(c.n)h+=`<div class="card row" onclick="FT='${c.m?'mens':'avul'}';go('grana')"><div class="grow"><b>Cobranças em aberto</b><div class="sub">${c.m?'Mensalidades: '+c.m:''}${c.m&&c.a?' · ':''}${c.a?'Avulsas/avaliações: '+c.a:''}</div></div><span class="pill">${c.n}</span></div>`;
+if(A.length)h+=`<div class="card" onclick="FT='desp';go('grana');FM=${A[0].o};render()"><b style="color:var(--terra)">Despesas perto do vencimento</b>${A.slice(0,3).map(x=>`<div class="mini"><div class="grow"><b>${esc(x.f.nome)}</b><div class="sub">vence ${quando(x.n)}</div></div><div class="amt">${brl(x.f.valor)}</div></div>`).join('')}</div>`;return h}
+/* ---------- DESPESAS (fixas, variáveis e outros) ----------
+   D.despFixas=[{id,nome,valor,dia,ini}] repetem todo mês a partir do mês de cadastro (ini); D.despPagas['id|AAAA-MM']=true
+   D.despLanc=[{id,tipo:'var'|'out',nome,valor,data}]  var: nome = categoria (ex.: Gasolina), vai somando lançamentos */
+function despMes(ym){const fx=D.despFixas.filter(f=>f.ini<=ym),fp=fx.filter(f=>D.despPagas[f.id+'|'+ym]).reduce((s,f)=>s+f.valor,0),L=D.despLanc.filter(x=>x.data.slice(0,7)==ym),sm=t=>L.filter(x=>x.tipo==t).reduce((s,x)=>s+x.valor,0);
+return{fx,fp,L,v:sm('var'),o:sm('out'),t:fp+sm('var')+sm('out')}}
+function vDesp(ym){const M=despMes(ym),cats={};M.L.filter(x=>x.tipo=='var').forEach(x=>cats[x.nome]=(cats[x.nome]||0)+x.valor);
+const ls=a=>a.sort((x,y)=>y.data.localeCompare(x.data)).map(x=>`<div class="mini"><div class="grow"><b>${esc(x.nome)}</b><div class="sub">${fd2(x.data)}</div></div><div class="amt">${brl(x.valor)}</div><button class="x" onclick="delDesp('l','${x.id}')">✕</button></div>`).join('');
+return`<div class="card"><small>Total gasto no mês</small><div style="font-size:26px;font-weight:700;color:var(--terra)">${brl(M.t)}</div><div class="sub">Fixas pagas ${brl(M.fp)} · Variáveis ${brl(M.v)} · Outros ${brl(M.o)}</div></div>
+<button class="btn" onclick="sheetDesp()">+ Lançar despesa</button>
+<h3>Fixas</h3>${M.fx.length?M.fx.map(f=>{const p=!!D.despPagas[f.id+'|'+ym],due=dueF(f,ym),n=diasPara(due);return`<div class="card pay${p?' paid':''}"><div class="grow"><b>${esc(f.nome)}</b><div class="sub" style="${!p&&n<0?'color:var(--terra)':''}">${p?'paga ✓':'vence '+fd2(due)+' · '+quando(n)}</div></div><div class="amt">${brl(f.valor)}</div><button class="btn sm ${p?'ghost':'okb'}" onclick="pagaFix('${f.id}','${ym}')">${p?'Desfazer':'Paguei'}</button><button class="x" onclick="delDesp('f','${f.id}')">✕</button></div>`}).join(''):'<p class="sub">Nenhuma despesa fixa cadastrada.</p>'}
+<h3>Variáveis</h3>${Object.keys(cats).length?Object.entries(cats).map(([c,v])=>`<div class="card"><div class="row"><b class="grow">${esc(c)}</b><b class="amt">${brl(v)}</b></div>${ls(M.L.filter(x=>x.tipo=='var'&&x.nome==c))}</div>`).join(''):'<p class="sub">Nenhum gasto variável neste mês.</p>'}
+<h3>Outros</h3>${M.L.some(x=>x.tipo=='out')?`<div class="card">${ls(M.L.filter(x=>x.tipo=='out'))}</div>`:'<p class="sub">Nenhum gasto neste mês.</p>'}`}
+function sheetDesp(t){DS=t||DS;
+sheet(`<div class="sh"><h2>Nova despesa</h2><button class="x" onclick="fechar()">✕</button></div>
+<div class="seg"><button class="${DS=='fixa'?'on':''}" onclick="sheetDesp('fixa')">Fixa</button><button class="${DS=='var'?'on':''}" onclick="sheetDesp('var')">Variável</button><button class="${DS=='out'?'on':''}" onclick="sheetDesp('out')">Outros</button></div>
+<label>${DS=='var'?'Categoria':'Nome'}</label><input class="in" id="d-n" ${DS=='var'?'list="dl-c" value="Gasolina"':''} placeholder="${DS=='fixa'?'Ex.: Aluguel':DS=='var'?'Ex.: Gasolina':'Ex.: Cabelo'}" autocomplete="off"><datalist id="dl-c">${[...new Set(D.despLanc.filter(x=>x.tipo=='var').map(x=>x.nome))].map(c=>`<option value="${esc(c)}">`).join('')}</datalist>
+<label>Valor (R$)</label><input class="in" id="d-v" type="number" inputmode="decimal" placeholder="0">
+${DS=='fixa'?'<label>Vence no dia</label><input class="in" id="d-d" type="number" inputmode="numeric" min="1" max="31" value="5">':`<label>Data</label><input class="in" type="date" id="d-t" value="${hoje()}">`}
+<button class="btn" onclick="svDesp()">Salvar</button>`)}
+function svDesp(){const n=$('#d-n').value.trim(),v=num($('#d-v').value);if(!n||v<=0){aviso('Preencha o nome e um valor maior que zero.');return}
+if(DS=='fixa')D.despFixas.push({id:uid(),nome:n,valor:v,dia:Math.min(31,Math.max(1,parseInt($('#d-d').value)||5)),ini:hoje().slice(0,7)});
+else D.despLanc.push({id:uid(),tipo:DS,nome:n,valor:v,data:$('#d-t').value||hoje()});
+FT='desp';save();fechar();render();toast('Despesa salva')}
+function pagaFix(id,ym){const k=id+'|'+ym;if(D.despPagas[k])delete D.despPagas[k];else{D.despPagas[k]=true;toast('Despesa paga')}save();render()}
+function delDesp(tp,id){ask('Excluir esta despesa?'+(tp=='f'?' A repetição mensal será removida.':''),()=>{if(tp=='f'){D.despFixas=D.despFixas.filter(f=>f.id!=id);Object.keys(D.despPagas).forEach(k=>{if(k.startsWith(id+'|'))delete D.despPagas[k]})}else D.despLanc=D.despLanc.filter(x=>x.id!=id);save();render()},'Excluir')}
+/* ---------- RELATÓRIO: alunos ativos e alunos por academia ---------- */
+function porAcad(){const AC={},M={mensal:0,avulso:0};D.alunos.forEach(a=>{const k=a.academia||'Sem academia';AC[k]=(AC[k]||0)+1;M[a.tipo=='avulso'?'avulso':'mensal']++});
+const L=Object.entries(AC).sort((x,y)=>y[1]-x[1]);if(!L.length)return'';
+return`<h3>Alunos por academia</h3>${L.map(([k,n])=>`<div class="hbar"><span>${esc(k)}</span><div class="bar"><i style="width:${Math.round(n/L[0][1]*100)}%"></i></div><em>${n}</em></div>`).join('')}<p class="sub">Mensalistas: ${M.mensal} · Avulsos: ${M.avulso}</p>`}
+
+/* =====================================================
+   EVOLUÇÃO 4: lembrete de backup (3 dias) e validação de backups
+   ===================================================== */
+/* ✏️ LEMBRETE DE BACKUP: BK_DIAS = de quantos em quantos dias o app lembra de salvar os dados.
+   A data do último backup fica no localStorage (chave rotina_personal_v1_ultimo_backup). */
+const BKK=K+'_ultimo_backup',BKS=K+'_bk_adiar',BK_DIAS=3;
+const ultBk=()=>{try{return localStorage.getItem(BKK)}catch(e){return null}};
+function marcaBackup(){try{localStorage.setItem(BKK,new Date().toISOString());localStorage.removeItem(BKS)}catch(e){}} /* zera o contador */
+function diasSemBk(){const u=ultBk();if(!u)return 0;const n=Math.floor((Date.now()-new Date(u).getTime())/864e5);return isNaN(n)?0:Math.max(0,n)}
+const ultimoTxt=()=>{const u=ultBk();return u?fd(iso(new Date(u)))+' ('+quando(-diasSemBk())+')':'ainda não salvo'};
+/* Chamada ao abrir o app e ao voltar para ele: na 1ª vez só registra a data; depois avisa se passaram BK_DIAS dias ou mais. */
+function checaBackup(){try{if(!ultBk()){marcaBackup();return}
+const n=diasSemBk(),sn=+localStorage.getItem(BKS)||0;if(n<BK_DIAS||Date.now()<sn||$('#ov').style.display=='block')return;
+sheet(`<div class="noite"><div class="em">${ico('lock')}</div><p>Aviso do app: já faz ${n} dias que você não salva seus dados!</p><p class="sub" style="font-weight:400">Salve um backup agora para não perder nada se algo acontecer com o celular.</p><button class="btn" onclick="fechar();salvar()">Salvar backup agora</button><button class="btn ghost" onclick="adiaBk()">Lembrar depois</button></div>`)}catch(e){}}
+function adiaBk(){try{localStorage.setItem(BKS,String(Date.now()+4*36e5))}catch(e){}fechar()} /* "lembrar depois" = volta a avisar em 4 horas */
+/* Valida e limpa um backup antes de restaurar: ids, datas, horas, duplicados e chaves inválidas ficam de fora. */
+function sanea(d){const ID=/^[\w-]+$/,DT=/^\d{4}-\d\d-\d\d$/,HR=/^\d\d:\d\d$/,dd=(L,f)=>{const z={};return(Array.isArray(L)?L:[]).filter(x=>x&&typeof x.id=='string'&&ID.test(x.id)&&!z[x.id]&&f(x)&&(z[x.id]=1))};
+d.alunos=dd(d.alunos,a=>typeof a.nome=='string');d.alunos.forEach(a=>{a.fixos=(Array.isArray(a.fixos)?a.fixos:[]).filter(f=>f&&f.dia>=0&&f.dia<=6&&HR.test(f.hora));a.valor=+a.valor||0});
+d.aulas=dd(d.aulas,x=>DT.test(x.data)&&HR.test(x.hora));d.recebidos=dd(d.recebidos,r=>DT.test(r.data)&&+r.valor>=0);
+d.despFixas=dd(d.despFixas,f=>+f.valor>=0&&/^\d{4}-\d\d$/.test(f.ini));d.despLanc=dd(d.despLanc,x=>DT.test(x.data)&&+x.valor>=0);d.extras=dd(d.extras,x=>DT.test(x.data)&&+x.valor>0);d.arq=dd(d.arq,a=>DT.test(a.d)&&HR.test(a.h)&&(a.v=='aula'||a.v=='aval'));
+d.cfg=Object.assign({},base().cfg,d.cfg&&typeof d.cfg=='object'&&!Array.isArray(d.cfg)?d.cfg:{});if(!(d.cfg.hIni>=0&&d.cfg.hFim<=23&&d.cfg.hIni<d.cfg.hFim)){d.cfg.hIni=5;d.cfg.hFim=21} /* horário de atendimento inválido volta ao padrão */
+['feitas','faltas','mov','pagos','despPagas'].forEach(k=>{if(!d[k]||typeof d[k]!='object'||Array.isArray(d[k]))d[k]={}});
+Object.keys(d.mov).forEach(k=>{const m=d.mov[k];if(!/^([\w-]+\|\d{4}-\d\d-\d\d\|\d\d:\d\d|a\|[\w-]+)$/.test(k)||!m||!HR.test(m.para)||!HR.test(m.de)||(m.data&&!DT.test(m.data)))delete d.mov[k]});
+Object.keys(d.faltas).forEach(k=>{const f=d.faltas[k];if(!f||!DT.test(f.data))delete d.faltas[k]})}
+
+/* =====================================================
+   EVOLUÇÃO 5: vários dias de uma vez, duplas (até 2 alunos por horário) e abas Vagos / Dupla
+   ===================================================== */
+let XD=new Set(),XH='08:00',AG='todos';
+/* ✏️ CAPACIDADE: máximo de alunos por horário (2 = dupla). Mude CAP se um dia precisar de outro limite. */
+const CAP=2;
+/* Todas as aulas do dia; marca "dupla" quando 2 ou mais alunos dividem a mesma hora cheia (cada um com presença/falta própria). */
+function aulasDia(d){const R=aulasDia0(d);R.forEach(l=>{l.dupla=!l.falta&&R.filter(x=>!x.falta&&parseInt(x.hora)==parseInt(l.hora)).length>1});return R}
+const ativosHora=(d,h)=>aulasDia(d).filter(l=>!l.falta&&parseInt(l.hora)==parseInt(h)); /* quem treina naquela hora */
+/* Vagas fixas que sobram. Olha os alunos fixos E as próximas 12 semanas (avulsas e reagendamentos); avaliação marcada naquele dia/hora = zero vagas. */
+const vagasFixo=(dia,hora,exc)=>{if(D.aulas.some(x=>x.tipo=='aval'&&x.data>=hoje()&&pd(x.data).getDay()==dia&&parseInt(x.hora)==parseInt(hora)))return 0;
+let mx=D.alunos.filter(a=>a.id!=exc&&(a.fixos||[]).some(f=>f.dia==dia&&parseInt(f.hora)==parseInt(hora))).length;
+for(let i=0;i<84;i++){const d=ad(hoje(),i);if(pd(d).getDay()==dia)mx=Math.max(mx,ativosHora(d,hora).filter(l=>!exc||l.aid!=exc).length)}
+return CAP-mx};
+function porHora(d){const m={};aulasDia(d).forEach(l=>{if(l.falta)return;const h=parseInt(l.hora);(m[h]=m[h]||[]).push(l)});return m}
+/* ---------- CADASTRO: marcar vários dias da semana de uma vez ---------- */
+function togDia(i){XH=$('#x-h').value||XH;collect();XD.has(i)?XD.delete(i):XD.add(i);drawAluno()}
+function addFx(){collect();const h=$('#x-h').value||'08:00',dias=[...XD].sort(),lot=[];XH=h;
+if(!dias.length){aviso('Toque em pelo menos um dia da semana.');return}
+dias.forEach(d=>{if(E.fixos.some(f=>f.dia==d&&f.hora==h))return;if(vagasFixo(d,h,E.id)<=0){lot.push(DC[d]);return}E.fixos.push({dia:d,hora:h})});
+E.fixos.sort((a,b)=>a.dia-b.dia||a.hora.localeCompare(b.hora));XD=new Set();drawAluno();
+if(lot.length)aviso('Horário indisponível (2 alunos ou avaliação nas próximas semanas) em: '+lot.join(', ')+' às '+hh(h)+'. Os outros dias foram adicionados.')}
+/* ---------- AGENDA DO DIA: abas Agenda · Vagos (0 alunos) · Dupla (1 aluno, sobra 1 vaga) ---------- */
+function agendaLista(){const t=hoje(),agora=sel==t?new Date().getHours():-1,M=porHora(sel),livre=[],dupla=[];
+for(let h=H_INI;h<=H_FIM;h++){if(h<=agora)continue;const n=(M[h]||[]).length;if(n==0)livre.push(h);else if(n==1&&!M[h][0].aval)dupla.push(h)} /* horários lotados (2) não entram em nenhuma aba */
+const seg=`<div class="seg s3 mb"><button class="${AG=='todos'?'on':''}" onclick="AG='todos';render()">Agenda</button><button class="${AG=='vagos'?'on':''}" onclick="AG='vagos';render()">Vagos (${livre.length})</button><button class="${AG=='dupla'?'on':''}" onclick="AG='dupla';render()">Dupla (${dupla.length})</button></div>`;
+if(AG=='vagos')return seg+(livre.length?livre.map(h=>`<div class="vago" onclick="sheetVago(${h})"><div class="hr">${h}h</div><div class="grow"><b>Vago</b><div class="sub">0 alunos</div></div><span class="mais">＋</span></div>`).join(''):'<div class="card vazio">Nenhum horário totalmente livre neste dia.</div>');
+if(AG=='dupla')return seg+(dupla.length?dupla.map(h=>`<div class="card row" onclick="sheetVago(${h})"><div class="hr">${h}h</div><div class="grow"><b>1 vaga sobrando</b><div class="sub">Com ${esc(M[h][0].nome)||'1 aluno'} · cabe mais 1</div></div><span class="mais">＋</span></div>`).join(''):'<div class="card vazio">Nenhum horário com apenas 1 aluno neste dia.</div>');
+return seg+slots(sel).map(slotHtml).join('')}
+/* Atualiza horas, aviso de lotação e atalhos: horários livres e horários com 1 vaga sobrando (dupla). EXC = a própria aula ao reagendar. */
+function liv(){const e=$('#liv'),d=$('#a-d'),sh=$('#a-h');if(!e)return;if(!d||!d.value){e.innerHTML='';return}
+if(!SOLIVRE)sh.innerHTML=horasOpt(d.value,sh.value); /* avaliação usa campo de hora livre (aceita minutos) */
+const hv=sh.value,oc=ativosHora(d.value,hv).filter(l=>l.k!=EXC),V=livresAg(d.value),agora=d.value==hoje()?new Date().getHours():-1,M=porHora(d.value),DP=[];
+for(let h=H_INI;h<=H_FIM;h++){const X=(M[h]||[]).filter(l=>l.k!=EXC);if(h>agora&&X.length==1&&!X[0].aval)DP.push(h)}
+const msg=SOLIVRE&&oc.length?'<div class="cft">Esse horário não está livre ('+oc.map(l=>esc(l.nome)||'sem nome').join(' e ')+' às '+hh(oc[0].hora)+'). Avaliação só vai em hora 100% livre; os minutos você escolhe.</div>':oc.some(l=>l.aval)?'<div class="cft">Esse horário tem uma avaliação marcada: é exclusivo, não aceita outro aluno.</div>':oc.length>=CAP?`<div class="cft">Horário lotado: já tem 2 alunos às ${hh(hv)} (${oc.map(l=>esc(l.nome)||'sem nome').join(' e ')}). Escolha outro.</div>`:oc.length==1?`<div class="sub" style="margin-top:8px">Já tem 1 aluno às ${hh(hv)} (${esc(oc[0].nome)||'sem nome'}): este fica em dupla com ele.</div>`:'';
+const chips=(L,t)=>L.length?`<div class="sub" style="margin:8px 0 6px">${t}</div><div class="chips">${L.map(h=>`<button class="chip sm" onclick="$('#a-h').value='${hora2(h)}';liv()">${h}h</button>`).join('')}</div>`:'';
+e.innerHTML=(SOLIVRE?'<div class="sub" style="margin-top:8px">Avaliação: escolha a hora e os minutos (ex.: 8:20). A hora cheia precisa estar 100% livre, sem nenhum aluno.</div>':'')+msg+(V.length?chips(V,'Horários livres neste dia:'):'<div class="sub" style="margin-top:8px">Nenhum horário livre neste dia.</div>')+(SOLIVRE?'':chips(DP,'Com 1 vaga sobrando (dupla):'))}
+
+/* =====================================================
+   EVOLUÇÃO 6: avaliação em horário 100% livre (exclusivo) e bloco único para dupla
+   ===================================================== */
+let SOLIVRE=false; /* true = o seletor de horas mostra só horas sem nenhum aluno (regra da Avaliação Física) */
+
+/* =====================================================
+   EVOLUÇÃO 7: renda extra (entradas sem aluno) e travas de zoom
+   ===================================================== */
+/* Sem zoom por pinça: o Safari do iPhone ignora user-scalable=no, então os gestos também são travados aqui. */
+['gesturestart','gesturechange','gestureend'].forEach(e=>document.addEventListener(e,ev=>ev.preventDefault()));
+/* ---------- RENDA EXTRA: dinheiro que entrou por fora (sem aluno). D.extras=[{id,valor,data,desc}] soma no "Recebido" do mês ---------- */
+function extraLista(EX){return EX.length?`<div class="card"><small>Rendas extras do mês</small><div>${EX.map(x=>`<div class="mini"><div class="grow"><b>${esc(x.desc)||'Renda extra'}</b><div class="sub">${fd2(x.data)}</div></div><div class="amt">${brl(x.valor)}</div><button class="x" onclick="delExtra('${x.id}')">✕</button></div>`).join('')}</div></div>`:''}
+function sheetExtra(){sheet(`<div class="sh"><h2>Renda extra</h2><button class="x" onclick="fechar()">✕</button></div>
+<label>Valor (R$)</label><input class="in" id="e-v" type="number" inputmode="decimal" placeholder="0">
+<label>Data</label><input class="in" type="date" id="e-d" value="${hoje()}">
+<label>Descrição (opcional)</label><input class="in" id="e-n" placeholder="Ex.: venda, bônus, presente" autocomplete="off">
+<button class="btn" onclick="svExtra()">Salvar</button>`)}
+function svExtra(){const v=num($('#e-v').value),d=$('#e-d').value;if(!(v>0)){aviso('Digite um valor maior que zero.');return}if(!d){aviso('Escolha a data.');return}
+D.extras.push({id:uid(),valor:v,data:d,desc:$('#e-n').value.trim()});
+const n=new Date();FM=(+d.slice(0,4)-n.getFullYear())*12+(+d.slice(5,7)-1-n.getMonth()); /* abre o mês da renda lançada */
+save();fechar();render();toast('Renda extra registrada')}
+function delExtra(id){ask('Excluir esta renda extra?',()=>{D.extras=D.extras.filter(x=>x.id!=id);save();render()},'Excluir')}
+
+/* Cabe mais alguém nesse dia/horário? (ignora a própria aula k). Avaliação exige horário sem ninguém; aula comum aceita até CAP e nunca entra onde há avaliação. */
+function cabe(d,h,k,aval){const L=ativosHora(d,h).filter(l=>l.k!=k);return aval?L.length==0:(L.length<CAP&&!L.some(l=>l.aval))}
+
+/* ✏️ HORÁRIO DA JANELA: só a AVALIAÇÃO (SOLIVRE) aceita hora quebrada (ex.: 08:20) num campo de hora; aula avulsa, aula fixa e alunos seguem em horas inteiras. */
+function horaInput(val){return SOLIVRE?`<input class="in" type="time" id="a-h" value="${val}" onchange="liv()">`:hrSel('a-h',val)}
+/* =====================================================
+   EVOLUÇÃO 8: horas trabalhadas (só atendimentos marcados como feitos)
+   ===================================================== */
+/* ✏️ MINUTOS POR ATENDIMENTO: aula fixa ou avulsa = 60 · avaliação física = 40. Dupla (2 alunos na mesma hora cheia) conta 1 vez só. */
+const MIN_AULA=60,MIN_AVAL=40;
+const ARQ=()=>D.arq||(D.arq=[]); /* avulsas/avaliações feitas que a limpeza automática já apagou: guarda só data, hora e tipo (sem nome) para não perder as horas */
+/* Minutos trabalhados num dia. */
+function minDia(d){const g={},add=(h,m)=>{h=parseInt(h);g[h]=Math.max(g[h]||0,m)};
+aulasDia(d).forEach(l=>{if(!l.falta&&D.feitas[l.k]!==undefined)add(l.hora,l.aval?MIN_AVAL:MIN_AULA)});
+ARQ().forEach(a=>{if(a.d==d)add(a.h,a.v=='aval'?MIN_AVAL:MIN_AULA)});
+return Object.values(g).reduce((s,m)=>s+m,0)}
+/* Datas que têm algum atendimento feito (usadas para somar nos relatórios). */
+function datasTrab(){const S=new Set();Object.keys(D.feitas).forEach(k=>{const p=k.split('|');if(p[0]=='a'){const x=D.aulas.find(a=>a.id==p[1]);if(x)S.add(x.data)}else if(p.length==3)S.add((D.mov[k]&&D.mov[k].data)||p[1])});ARQ().forEach(a=>S.add(a.d));return[...S]}
+/* Formato: 5h · 5h 40m · 40m · 0h */
+const fmtH=m=>{const h=Math.floor(m/60),r=m%60;return h&&r?h+'h '+r+'m':h?h+'h':r?r+'m':'0h'};
+
+let ult=hoje();
+document.addEventListener('visibilitychange',()=>{if(document.hidden)return;if(ult!=hoje()){ult=hoje();limpa();sel=ult;render()}checaBackup()});
+if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();
+if('serviceWorker'in navigator)addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+limpa();
+render();
+checaBackup();
+</script></body></html>
